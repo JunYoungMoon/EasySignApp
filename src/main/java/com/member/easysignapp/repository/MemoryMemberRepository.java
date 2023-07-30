@@ -40,5 +40,7 @@ public class MemoryMemberRepository implements MemberRepository {
                 .findFirst()
                 .orElse(null);
     }
+
+    // 기타 필요한 메서드 추가
 }
 
