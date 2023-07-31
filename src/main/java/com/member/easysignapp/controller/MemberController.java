@@ -17,7 +17,6 @@ public class MemberController {
 
     @PostMapping("/signup")
     public Member signUp(@RequestBody MemberRequest request) {
-        // 클라이언트로부터 전달된 요청을 바탕으로 MemberService를 호출합니다.
         return memberService.signUp(request.getUsername(), request.getEmail(), request.getPassword());
     }
 }
