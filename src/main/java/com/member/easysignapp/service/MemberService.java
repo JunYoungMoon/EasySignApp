@@ -12,10 +12,17 @@ public class MemberService {
         this.memberRepository = memberRepository;
     }
 
-    // 회원가입 로직을 수행하는 메서드
     public Member signUp(String username, String email, String password) {
-        // 회원 가입 로직 구현
-        // 아이디 중복 체크, 이메일 중복 체크 등의 검증 로직을 추가해야 합니다.
+        // 아이디 중복 체크
+        if (memberRepository.existsByUsername(username)) {
+            throw new RuntimeException("이미 사용중인 아이디입니다.");
+        }
+
+        // 이메일 중복 체크
+        if (memberRepository.existsByEmail(email)) {
+            throw new RuntimeException("이미 사용중인 이메일입니다.");
+        }
+
         Member member = new Member();
         member.setUsername(username);
         member.setEmail(email);
