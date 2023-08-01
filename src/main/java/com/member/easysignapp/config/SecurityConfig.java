@@ -27,11 +27,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf()
-                .csrfTokenRepository(csrfTokenRepository())
+                .csrf().disable() // CSRF 보호 비활성화
+                .authorizeRequests()
+//                .csrfTokenRepository(csrfTokenRepository())
                 .and()
                 .authorizeRequests()
-                .antMatchers("/signup").permitAll() // 회원가입 API는 CSRF 보호 제외
+                .antMatchers("/signup", "/getcsrf").permitAll() // 회원가입 API는 CSRF 보호 제외
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
