@@ -1,6 +1,5 @@
 package com.member.easysignapp.security;
 
-import org.springframework.core.Ordered;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -11,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class CustomCsrfFilter extends OncePerRequestFilter{
+public class CustomCsrfFilter extends OncePerRequestFilter {
 
     private static final String MOBILE_USER_AGENT = "Mobile";
 
@@ -23,8 +22,8 @@ public class CustomCsrfFilter extends OncePerRequestFilter{
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (isMobileRequest(request)) {
-            // 모바일일때 CSRF 검증 체크 스킵
+        if (isMobileRequest(request) || request.getRequestURI().equals("/getcsrf")) {
+            // 모바일일때와 getcsrf일때 CSRF 검증 체크 스킵
             filterChain.doFilter(request, response);
         } else {
             // 웹일때 CSRF 검증
