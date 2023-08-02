@@ -3,13 +3,16 @@ package com.member.easysignapp.service;
 import com.member.easysignapp.domain.Member;
 import com.member.easysignapp.repository.MemberRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public MemberService(MemberRepository memberRepository) {
+    public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
         this.memberRepository = memberRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Member signUp(String username, String email, String password) {
@@ -26,7 +29,10 @@ public class MemberService {
         Member member = new Member();
         member.setUsername(username);
         member.setEmail(email);
-        member.setPassword(password);
+
+        // 비밀번호를 Spring Security를 이용하여 해싱하여 저장
+        String hashedPassword = passwordEncoder.encode(password);
+        member.setPassword(hashedPassword);
 
         return memberRepository.save(member);
     }

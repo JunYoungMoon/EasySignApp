@@ -1,11 +1,13 @@
 package com.member.easysignapp.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.member.easysignapp.security.CustomCsrfFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
@@ -13,31 +15,27 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        // TODO: 인증 설정
-    }
-
     @Bean
     public CsrfTokenRepository csrfTokenRepository() {
         return CookieCsrfTokenRepository.withHttpOnlyFalse();
+    }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable() // CSRF 보호 비활성화
-                .authorizeRequests()
-//                .csrfTokenRepository(csrfTokenRepository())
+                .addFilterBefore(new CustomCsrfFilter(csrfTokenRepository()), CustomCsrfFilter.class) // 모바일일때 CSRF 검증 스킵
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // 세션을 생성하지 않고, 요청마다 인증을 수행 JWT 방식
                 .and()
                 .authorizeRequests()
-                .antMatchers("/signup", "/getcsrf").permitAll() // 회원가입 API는 CSRF 보호 제외
-                .anyRequest().authenticated()
-                .and()
-                .formLogin()
-                .and()
-                .httpBasic();
+                    .antMatchers("/signup").permitAll() // 로그인 없이 접근 가능한 URL
+                    .antMatchers("/getcsrf").permitAll()
+                    .antMatchers("/login").permitAll()
+                    .anyRequest().authenticated() // 그 외의 URL은 인증된 사용자만 접근 가능
+                .and();
 
         return http.build();
     }
