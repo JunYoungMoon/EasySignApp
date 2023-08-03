@@ -1,21 +1,24 @@
 package com.member.easysignapp.config;
 
 import com.member.easysignapp.security.CustomCsrfFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig {
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
     @Bean
     public CsrfTokenRepository csrfTokenRepository() {
         return CookieCsrfTokenRepository.withHttpOnlyFalse();
@@ -39,6 +42,7 @@ public class SecurityConfig {
                 .authorizeRequests()
                     .antMatchers("/signup", "/getcsrf", "/login").permitAll() // 로그인 없이 접근 가능한 URL
                 .anyRequest().authenticated(); // 그 외의 URL은 인증된 사용자만 접근 가능
+
 
         return http.build();
     }

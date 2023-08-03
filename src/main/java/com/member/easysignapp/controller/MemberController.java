@@ -19,4 +19,10 @@ public class MemberController {
     public Member signUp(@RequestBody MemberRequest request) {
         return memberService.signUp(request.getUsername(), request.getEmail(), request.getPassword());
     }
+
+    @PostMapping("/login")
+    public String login(@RequestBody MemberRequest request) {
+        Member member = memberService.login(request.getUsername(), request.getPassword());
+        return memberService.generateJwtToken(member);
+    }
 }

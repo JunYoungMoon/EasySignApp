@@ -1,7 +1,6 @@
 package com.member.easysignapp.security;
 
-import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.*;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -28,13 +27,18 @@ public class CustomCsrfFilter extends OncePerRequestFilter {
         } else {
             // 웹일때 CSRF 검증
             CsrfToken csrfToken = csrfTokenRepository.loadToken(request);
+
             if (csrfToken != null) {
                 String actualToken = request.getHeader(csrfToken.getHeaderName());
                 if (actualToken == null || !actualToken.equals(csrfToken.getToken())) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid CSRF Token");
                     return;
                 }
+            } else {
+                csrfToken = this.csrfTokenRepository.generateToken(request);
+                this.csrfTokenRepository.saveToken(csrfToken, request, response);
             }
+
             filterChain.doFilter(request, response);
         }
     }
