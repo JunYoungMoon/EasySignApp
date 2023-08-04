@@ -6,23 +6,37 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${jwt.expiration}")
-    private long jwtExpirationMs;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration.access}")
+    private long jwtExpirationAccessMs;
+
+    @Value("${jwt.expiration.refresh}")
+    private long jwtExpirationRefreshMs;
+
+    public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder, AuthenticationManagerBuilder authenticationManagerBuilder) {
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationManagerBuilder = authenticationManagerBuilder;
     }
 
     public Member signUp(String username, String email, String password) {
@@ -47,9 +61,13 @@ public class MemberService {
         return memberRepository.save(member);
     }
 
-    public Member login(String username, String password) {
-        Member member = memberRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("잘못된 사용자 이름 또는 비밀번호"));
+    public Member login(String email, String password) {
+
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
+
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+
 
         if (!passwordEncoder.matches(password, member.getPassword())) {
             throw new RuntimeException("잘못된 사용자 이름 또는 비밀번호");
@@ -59,16 +77,19 @@ public class MemberService {
     }
 
     public String generateJwtToken(Member member) {
-        Date expirationDate = new Date(System.currentTimeMillis() + jwtExpirationMs);
+        Date expirationDate = new Date(System.currentTimeMillis() + jwtExpirationAccessMs);
 
-        // Generate a secure HS512 key with the appropriate size (512 bits)
-        Key signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+        Key signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("email", member.getEmail());
+        claims.put("username", member.getUsername());
 
         return Jwts.builder()
-                .setSubject(member.getUsername())
+                .setClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(expirationDate)
-                .signWith(signingKey)
+                .signWith(signingKey, SignatureAlgorithm.HS512)
                 .compact();
     }
 }

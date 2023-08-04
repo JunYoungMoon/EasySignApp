@@ -22,7 +22,7 @@ public class MemberController {
 
     @PostMapping("/login")
     public String login(@RequestBody MemberRequest request) {
-        Member member = memberService.login(request.getUsername(), request.getPassword());
+        Member member = memberService.login(request.getEmail(), request.getPassword());
         return memberService.generateJwtToken(member);
     }
 }

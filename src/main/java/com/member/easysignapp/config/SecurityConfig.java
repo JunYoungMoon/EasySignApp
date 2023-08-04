@@ -1,10 +1,12 @@
 package com.member.easysignapp.config;
 
 import com.member.easysignapp.security.CustomCsrfFilter;
+import com.member.easysignapp.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,9 +17,13 @@ import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
     @Value("${jwt.secret}")
     private String jwtSecret;
+
+    @Value("${jwt.expiration.access}")
+    private long jwtExpirationAccessMs;
 
     @Bean
     public CsrfTokenRepository csrfTokenRepository() {
@@ -37,16 +43,13 @@ public class SecurityConfig {
         http
                 .csrf().disable()   //security에서 기본적으로 활성화 되는 CSRF 사용을 막음, 사용을 안막으면 아래의 필터의 동작을 막혀버림
                 .addFilterBefore(new CustomCsrfFilter(csrfTokenRepository()), CsrfFilter.class) // 모바일일때 CSRF 검증 스킵 및 웹일때 CSRF 검증
+                .addFilterBefore(new JwtAuthenticationFilter(jwtSecret), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // 세션을 생성하지 않고, 요청마다 인증을 수행 JWT 방식
                 .and()
                 .authorizeRequests()
                     .antMatchers("/signup", "/getcsrf", "/login").permitAll() // 로그인 없이 접근 가능한 URL
                 .anyRequest().authenticated(); // 그 외의 URL은 인증된 사용자만 접근 가능
 
-
         return http.build();
     }
 }
-
-
-
