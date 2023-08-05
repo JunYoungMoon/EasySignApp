@@ -1,6 +1,7 @@
 package com.member.easysignapp.controller;
 
 import com.member.easysignapp.domain.Member;
+import com.member.easysignapp.domain.TokenInfo;
 import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.service.MemberService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +22,11 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody MemberRequest request) {
-        Member member = memberService.login(request.getEmail(), request.getPassword());
-        return memberService.generateJwtToken(member);
+    public TokenInfo login(@RequestBody MemberRequest request) {
+
+        String email = request.getEmail();
+        String password = request.getPassword();
+
+        return memberService.login(email, password);
     }
 }
