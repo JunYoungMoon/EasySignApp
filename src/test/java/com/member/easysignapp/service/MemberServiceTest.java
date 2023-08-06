@@ -9,6 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -29,11 +32,15 @@ public class MemberServiceTest {
         String email = "test@example.com";
         String password = "testpassword";
 
+        List<String> roles = new ArrayList<>();
+        roles.add("user");
+        roles.add("admin");
+
         when(memberRepository.existsByUsername(username)).thenReturn(false);
         when(memberRepository.existsByEmail(email)).thenReturn(false);
 
         // When
-        Member savedMember = memberService.signUp(username, email, password);
+        Member savedMember = memberService.signUp(username, email, password, roles);
 
         // Then
         assertNotNull(savedMember);

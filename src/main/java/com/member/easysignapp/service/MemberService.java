@@ -7,7 +7,6 @@ import com.member.easysignapp.security.JwtTokenProvider;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -16,9 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class MemberService {
@@ -44,7 +41,7 @@ public class MemberService {
     @Value("${jwt.expiration.refresh}")
     private long jwtExpirationRefreshMs;
 
-    public Member signUp(String username, String email, String password) {
+    public Member signUp(String username, String email, String password, List<String> roles) {
         // 아이디 중복 체크
         if (memberRepository.existsByUsername(username)) {
             throw new RuntimeException("이미 사용중인 아이디입니다.");
@@ -58,6 +55,7 @@ public class MemberService {
         Member member = new Member();
         member.setUsername(username);
         member.setEmail(email);
+        member.setRoles(roles);
 
         // 비밀번호를 Spring Security를 이용하여 해싱하여 저장
         String hashedPassword = passwordEncoder.encode(password);

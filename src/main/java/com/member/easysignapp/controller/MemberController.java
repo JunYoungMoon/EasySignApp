@@ -18,7 +18,7 @@ public class MemberController {
 
     @PostMapping("/signup")
     public Member signUp(@RequestBody MemberRequest request) {
-        return memberService.signUp(request.getUsername(), request.getEmail(), request.getPassword());
+        return memberService.signUp(request.getUsername(), request.getEmail(), request.getPassword(), request.getRoles());
     }
 
     @PostMapping("/login")
