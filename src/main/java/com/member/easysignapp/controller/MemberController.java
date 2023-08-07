@@ -29,4 +29,9 @@ public class MemberController {
 
         return memberService.login(email, password);
     }
+
+    @PostMapping("/test")
+    public String test() {
+        return "success";
+    }
 }
