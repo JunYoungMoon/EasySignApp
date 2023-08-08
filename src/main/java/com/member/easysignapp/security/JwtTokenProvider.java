@@ -25,9 +25,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class JwtTokenProvider {
-
+    @Value("${jwt.expiration.access}")
+    private long accessExpiration;
+    @Value("${jwt.expiration.refresh}")
+    private long refreshExpiration;
     private final Key key;
-
     private final RefreshTokenService refreshTokenService;
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService) {
@@ -35,13 +37,6 @@ public class JwtTokenProvider {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
-
-    @Value("${jwt.expiration.access}")
-    private long accessExpiration;
-
-    @Value("${jwt.expiration.refresh}")
-    private long refreshExpiration;
-
 
     public TokenInfo generateToken(Authentication authentication) {
         String authorities = authentication.getAuthorities().stream()
@@ -64,7 +59,7 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        // Refresh Token 저장
+        // Refresh Token DB 저장
         refreshTokenService.saveRefreshToken(authentication.getName(), refreshToken, new Date(now + refreshExpiration).toInstant());
 
         return TokenInfo.builder()
