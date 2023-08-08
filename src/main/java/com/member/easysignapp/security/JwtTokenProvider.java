@@ -1,6 +1,7 @@
 package com.member.easysignapp.security;
 
 import com.member.easysignapp.domain.TokenInfo;
+import com.member.easysignapp.service.RefreshTokenService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -27,10 +28,20 @@ public class JwtTokenProvider {
 
     private final Key key;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
+    private final RefreshTokenService refreshTokenService;
+
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService) {
+        this.refreshTokenService = refreshTokenService;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
+
+    @Value("${jwt.expiration.access}")
+    private long accessExpiration;
+
+    @Value("${jwt.expiration.refresh}")
+    private long refreshExpiration;
+
 
     public TokenInfo generateToken(Authentication authentication) {
         String authorities = authentication.getAuthorities().stream()
@@ -39,7 +50,7 @@ public class JwtTokenProvider {
 
         long now = (new Date()).getTime();
         // Access Token 생성
-        Date accessTokenExpiresIn = new Date(now + 86400000);
+        Date accessTokenExpiresIn = new Date(now + accessExpiration);
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("auth", authorities)
@@ -49,9 +60,12 @@ public class JwtTokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setExpiration(new Date(now + 86400000))
+                .setExpiration(new Date(now + refreshExpiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+
+        // Refresh Token 저장
+        refreshTokenService.saveRefreshToken(authentication.getName(), refreshToken, new Date(now + refreshExpiration).toInstant());
 
         return TokenInfo.builder()
                 .grantType("Bearer")
@@ -81,20 +95,8 @@ public class JwtTokenProvider {
     }
 
     // 토큰 정보를 검증하는 메서드
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("Invalid JWT Token", e);
-        } catch (ExpiredJwtException e) {
-            log.info("Expired JWT Token", e);
-        } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT Token", e);
-        } catch (IllegalArgumentException e) {
-            log.info("JWT claims string is empty.", e);
-        }
-        return false;
+    public void validateToken(String token) throws ExpiredJwtException {
+        Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
     }
 
     private Claims parseClaims(String accessToken) {
