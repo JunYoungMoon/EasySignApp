@@ -48,7 +48,10 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests()
                     .antMatchers("/signup", "/getcsrf", "/login").permitAll() // 로그인 없이 접근 가능한 URL
-                .anyRequest().authenticated(); // 그 외의 URL은 인증된 사용자만 접근 가능
+                .anyRequest().authenticated() // 그 외의 URL은 인증된 사용자만 접근 가능
+                .and()
+                .headers(headers ->
+                        headers.contentSecurityPolicy("script-src 'self'")); // CSP로 XSS 공격을 방지
 
         return http.build();
     }
