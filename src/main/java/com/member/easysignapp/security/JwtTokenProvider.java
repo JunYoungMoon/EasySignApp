@@ -1,5 +1,6 @@
 package com.member.easysignapp.security;
 
+import com.member.easysignapp.domain.RefreshToken;
 import com.member.easysignapp.domain.TokenInfo;
 import com.member.easysignapp.service.RefreshTokenService;
 import io.jsonwebtoken.*;
@@ -15,11 +16,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,6 +49,7 @@ public class JwtTokenProvider {
         Date accessTokenExpiresIn = new Date(now + accessExpiration);
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
+                .claim("tokenType", "access")
                 .claim("auth", authorities)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -55,6 +57,8 @@ public class JwtTokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
+                .setSubject(authentication.getName())
+                .claim("tokenType", "refresh")
                 .setExpiration(new Date(now + refreshExpiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -90,7 +94,7 @@ public class JwtTokenProvider {
     }
 
     // 토큰 정보를 검증하는 메서드
-    public void validateToken(String token) throws ExpiredJwtException {
+    public void validateToken(String token) throws ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, IllegalArgumentException, SecurityException {
         Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
     }
 
@@ -100,5 +104,11 @@ public class JwtTokenProvider {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    public void findByRefreshToken(String token){
+        Optional<RefreshToken> byToken = refreshTokenService.findByToken(token);
+
+
     }
 }
