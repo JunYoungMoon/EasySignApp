@@ -40,6 +40,9 @@ public class JwtTokenProvider {
     }
 
     public TokenInfo generateToken(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String userEmail = userDetails.getUsername();
+
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -48,7 +51,7 @@ public class JwtTokenProvider {
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + accessExpiration);
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(userEmail)
                 .claim("tokenType", "access")
                 .claim("auth", authorities)
                 .setExpiration(accessTokenExpiresIn)
@@ -57,7 +60,7 @@ public class JwtTokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(userEmail)
                 .claim("tokenType", "refresh")
                 .setExpiration(new Date(now + refreshExpiration))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -78,9 +81,11 @@ public class JwtTokenProvider {
         // 토큰 복호화
         Claims claims = parseClaims(accessToken);
 
+        //TODO refresh일때 유저 메일로 권한 정보 가져오기
         if (claims.get("auth") == null) {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
+
 
         // 클레임에서 권한 정보 가져오기
         Collection<? extends GrantedAuthority> authorities =

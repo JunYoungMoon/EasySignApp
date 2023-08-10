@@ -1,5 +1,7 @@
 package com.member.easysignapp.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.member.easysignapp.domain.TokenInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -44,7 +46,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 boolean isRefreshTokenValid = jwtTokenProvider.isRefreshTokenValid(token);
 
                 if (isRefreshTokenValid) {
+                    // Refresh 토큰으로부터 유저 정보 및 권한 추출
+                    Authentication authentication = jwtTokenProvider.getAuthentication(token);
 
+                    // 새로운 액세스 토큰 발급 및 리턴
+                    TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
+
+                    // 생성한 액세스 토큰을 응답으로 반환
+                    response.setContentType("application/json");
+                    response.getWriter().write(new ObjectMapper().writeValueAsString(newTokenInfo)); // JSON 형식으로 변환하여 응답
+                    response.setStatus(HttpServletResponse.SC_OK); // 200 OK
                 } else {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
                     response.getWriter().write("Validation failed with the corresponding refresh token.");
