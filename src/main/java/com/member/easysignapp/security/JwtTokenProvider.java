@@ -106,9 +106,9 @@ public class JwtTokenProvider {
         }
     }
 
-    public void findByRefreshToken(String token){
+    public boolean isRefreshTokenValid(String token){
         Optional<RefreshToken> byToken = refreshTokenService.findByToken(token);
 
-
+        return byToken.isPresent();
     }
 }

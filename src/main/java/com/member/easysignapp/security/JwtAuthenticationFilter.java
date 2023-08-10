@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -40,13 +41,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String tokenType = claims.get("tokenType", String.class);
             if ("refresh".equals(tokenType)) {
                 //refresh 일때는 검증 및 재발행
-                jwtTokenProvider.findByRefreshToken(token);
+                boolean isRefreshTokenValid = jwtTokenProvider.isRefreshTokenValid(token);
 
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
-                response.getWriter().write("refresh token call");
+                if (isRefreshTokenValid) {
+
+                } else {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
+                    response.getWriter().write("Validation failed with the corresponding refresh token.");
+                }
             } else {
-                //access일경우에는 refresh 토큰 요청
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
+                //access일 경우에는 refresh 토큰 요청
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403 Forbidden
                 response.getWriter().write("The access token has expired. Please pass the refresh token.");
             }
             return; // 필터 체인 중단
