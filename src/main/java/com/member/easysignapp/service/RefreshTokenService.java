@@ -5,6 +5,7 @@ import com.member.easysignapp.domain.RefreshToken;
 import com.member.easysignapp.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -24,5 +25,10 @@ public class RefreshTokenService {
 
     public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
+    }
+
+    @Transactional
+    public void deleteRefreshToken(String token) {
+        refreshTokenRepository.deleteByToken(token);
     }
 }

@@ -52,6 +52,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // 새로운 액세스 토큰 발급 및 리턴
                     TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
 
+                    // 기존 Refresh 토큰 제거
+                    jwtTokenProvider.deleteRefreshToken(token);
+
                     // 생성한 액세스 토큰을 응답으로 반환
                     response.setContentType("application/json");
                     response.getWriter().write(new ObjectMapper().writeValueAsString(newTokenInfo)); // JSON 형식으로 변환하여 응답

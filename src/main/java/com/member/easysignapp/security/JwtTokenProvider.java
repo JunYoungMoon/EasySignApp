@@ -1,7 +1,9 @@
 package com.member.easysignapp.security;
 
+import com.member.easysignapp.domain.Member;
 import com.member.easysignapp.domain.RefreshToken;
 import com.member.easysignapp.domain.TokenInfo;
+import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.service.RefreshTokenService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -17,10 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,8 +32,11 @@ public class JwtTokenProvider {
     private final Key key;
     private final RefreshTokenService refreshTokenService;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService) {
+    private final MemberRepository memberRepository;
+
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService, MemberRepository memberRepository) {
         this.refreshTokenService = refreshTokenService;
+        this.memberRepository = memberRepository;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -67,7 +69,7 @@ public class JwtTokenProvider {
                 .compact();
 
         // Refresh Token DB 저장
-        refreshTokenService.saveRefreshToken(authentication.getName(), refreshToken, new Date(now + refreshExpiration).toInstant());
+        refreshTokenService.saveRefreshToken(userEmail, refreshToken, new Date(now + refreshExpiration).toInstant());
 
         return TokenInfo.builder()
                 .grantType("Bearer")
@@ -81,21 +83,45 @@ public class JwtTokenProvider {
         // 토큰 복호화
         Claims claims = parseClaims(accessToken);
 
+        // tokenType 클레임 값 가져오기
+        String tokenType = claims.get("tokenType", String.class);
+
         //TODO refresh일때 유저 메일로 권한 정보 가져오기
-        if (claims.get("auth") == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+        if ("refresh".equals(tokenType)) {
+            // 클레임에서 이메일 정보 가져오기
+            String email = claims.getSubject();
+
+            // 이메일을 기반으로 Member 테이블 row 찾기
+            Optional<Member> member = memberRepository.findByEmail(email);
+
+            if (member.isPresent()) {
+                Member memberEntity = member.get();
+
+                // member 객체에서 권한 정보 가져오기
+                Collection<? extends GrantedAuthority> authorities = memberEntity.getAuthorities();
+
+                // UserDetails 객체를 만들어서 Authentication 리턴
+                UserDetails principal = new User(claims.getSubject(), "", authorities);
+                return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+
+            } else {
+                throw new RuntimeException("해당 이메일을 가진 사용자가 없습니다.");
+            }
+        } else {
+            if (claims.get("auth") == null) {
+                throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+            }
+
+            // 클레임에서 권한 정보 가져오기
+            Collection<? extends GrantedAuthority> authorities =
+                    Arrays.stream(claims.get("auth").toString().split(","))
+                            .map(SimpleGrantedAuthority::new)
+                            .collect(Collectors.toList());
+
+            // UserDetails 객체를 만들어서 Authentication 리턴
+            UserDetails principal = new User(claims.getSubject(), "", authorities);
+            return new UsernamePasswordAuthenticationToken(principal, "", authorities);
         }
-
-
-        // 클레임에서 권한 정보 가져오기
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get("auth").toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-
-        // UserDetails 객체를 만들어서 Authentication 리턴
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 
     // 토큰 정보를 검증하는 메서드
@@ -111,9 +137,13 @@ public class JwtTokenProvider {
         }
     }
 
-    public boolean isRefreshTokenValid(String token){
+    public boolean isRefreshTokenValid(String token) {
         Optional<RefreshToken> byToken = refreshTokenService.findByToken(token);
 
         return byToken.isPresent();
+    }
+
+    public void deleteRefreshToken(String token){
+        refreshTokenService.deleteRefreshToken(token);
     }
 }

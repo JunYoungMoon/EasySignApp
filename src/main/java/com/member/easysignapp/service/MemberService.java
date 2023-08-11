@@ -4,17 +4,12 @@ import com.member.easysignapp.domain.Member;
 import com.member.easysignapp.domain.TokenInfo;
 import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.security.JwtTokenProvider;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.security.Key;
 import java.util.*;
 
 @Service
@@ -24,7 +19,6 @@ public class MemberService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
 
-
     public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder, AuthenticationManagerBuilder authenticationManagerBuilder, JwtTokenProvider jwtTokenProvider) {
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
@@ -32,28 +26,13 @@ public class MemberService {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
-    @Value("${jwt.expiration.access}")
-    private long jwtExpirationAccessMs;
-
-    @Value("${jwt.expiration.refresh}")
-    private long jwtExpirationRefreshMs;
-
-    public Member signUp(String username, String email, String password, List<String> roles) {
-        // 아이디 중복 체크
-        if (memberRepository.existsByUsername(username)) {
-            throw new RuntimeException("이미 사용중인 아이디입니다.");
-        }
-
+    public Member signUp(String email, String password, List<String> roles) {
         // 이메일 중복 체크
         if (memberRepository.existsByEmail(email)) {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
 
         Member member = new Member();
-        member.setUsername(username);
         member.setEmail(email);
         member.setRoles(roles);
 
@@ -76,23 +55,6 @@ public class MemberService {
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         return jwtTokenProvider.generateToken(authentication);
-    }
-
-    public String generateJwtToken(Member member) {
-        Date expirationDate = new Date(System.currentTimeMillis() + jwtExpirationAccessMs);
-
-        Key signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("email", member.getEmail());
-        claims.put("username", member.getUsername());
-
-        return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(new Date())
-                .setExpiration(expirationDate)
-                .signWith(signingKey, SignatureAlgorithm.HS512)
-                .compact();
     }
 }
 
