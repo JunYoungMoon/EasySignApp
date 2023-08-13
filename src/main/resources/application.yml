@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/test
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+
+jwt:
+  secret: dfkgjdfg2835wh4bjwhskjdvhanem7213742ASNDGCkSADCkDCGNkv2387b7JDAKHFAKJSHFJSJHF123FASFBBFHAJDDHjasjfhfh87j4
+  expiration:
+    access: 8640
+    refresh: 8640

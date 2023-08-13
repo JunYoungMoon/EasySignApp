@@ -54,6 +54,7 @@ public class SecurityConfig {
                         headers.contentSecurityPolicy("script-src 'self'")) // CSP로 XSS 공격을 방지
                 .oauth2Login()
                 .loginPage("/login")
+                .defaultSuccessUrl("/success")
                 .and()
                 .logout()
                 .logoutSuccessUrl("/login")
