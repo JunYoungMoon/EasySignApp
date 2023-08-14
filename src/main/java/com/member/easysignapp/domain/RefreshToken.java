@@ -13,10 +13,10 @@ import java.time.Instant;
 public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idx;
 
     @Column(nullable = false)
-    private String email;
+    private String id;
 
     @Column(nullable = false)
     private String token;

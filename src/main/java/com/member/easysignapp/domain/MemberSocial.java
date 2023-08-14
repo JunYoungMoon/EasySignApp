@@ -16,10 +16,13 @@ import java.util.Map;
 @Setter
 @Getter
 @Entity
-public class GoogleMember implements OAuth2User {
+public class MemberSocial implements OAuth2User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idx;
     private Long id;
+    private String provider;
+    private String providerId;
     private String email;
 
     @Override

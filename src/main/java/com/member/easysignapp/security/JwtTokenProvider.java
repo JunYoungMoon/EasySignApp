@@ -43,7 +43,7 @@ public class JwtTokenProvider {
 
     public TokenInfo generateToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String userEmail = userDetails.getUsername();
+        String id = userDetails.getUsername();
 
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -53,7 +53,7 @@ public class JwtTokenProvider {
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + accessExpiration);
         String accessToken = Jwts.builder()
-                .setSubject(userEmail)
+                .setSubject(id)
                 .claim("tokenType", "access")
                 .claim("auth", authorities)
                 .setExpiration(accessTokenExpiresIn)
@@ -62,14 +62,14 @@ public class JwtTokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setSubject(userEmail)
+                .setSubject(id)
                 .claim("tokenType", "refresh")
                 .setExpiration(new Date(now + refreshExpiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
         // Refresh Token DB 저장
-        refreshTokenService.saveRefreshToken(userEmail, refreshToken, new Date(now + refreshExpiration).toInstant());
+        refreshTokenService.saveRefreshToken(id, refreshToken, new Date(now + refreshExpiration).toInstant());
 
         return TokenInfo.builder()
                 .grantType("Bearer")
@@ -89,10 +89,10 @@ public class JwtTokenProvider {
         //TODO refresh일때 유저 메일로 권한 정보 가져오기
         if ("refresh".equals(tokenType)) {
             // 클레임에서 이메일 정보 가져오기
-            String email = claims.getSubject();
+            String id = claims.getSubject();
 
             // 이메일을 기반으로 Member 테이블 row 찾기
-            Optional<Member> member = memberRepository.findByEmail(email);
+            Optional<Member> member = memberRepository.findById(id);
 
             if (member.isPresent()) {
                 Member memberEntity = member.get();

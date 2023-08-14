@@ -21,13 +21,14 @@ public class MemberService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public Member signUp(String email, String password, List<String> roles) {
+    public Member signUp(String id, String email, String password, List<String> roles) {
         // 이메일 중복 체크
-        if (memberRepository.existsByEmail(email)) {
+        if (memberRepository.existsById(id)) {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
 
         Member member = new Member();
+        member.setId(id);
         member.setEmail(email);
         member.setRoles(roles);
 
@@ -38,10 +39,10 @@ public class MemberService {
         return memberRepository.save(member);
     }
 
-    public TokenInfo login(String email, String password) {
+    public TokenInfo login(String id, String password) {
         //사용자의 인증을 위해 이 객체를 사용하여 사용자가 제공한 아이디와 비밀번호를 저장
         //이 토큰은 사용자 인증을 위해 사용되며, 인증 매니저를 통해 실제 인증이 수행
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(id, password);
 
         //authenticationManagerBuilder는 스프링 시큐리티 설정에서 정의한 AuthenticationManager를 생성하는 빌더 클래스이고
         //getObject() 메서드를 사용하여 실제 AuthenticationManager 객체를 가져온다.

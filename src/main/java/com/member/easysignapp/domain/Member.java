@@ -19,13 +19,14 @@ import java.util.stream.Collectors;
 public class Member implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idx;
+    private String id;
     private String email;
     private String password;
 
     @Override
     public String getUsername() {
-        return email;
+        return id;
     }
 
     @ElementCollection(fetch = FetchType.EAGER)

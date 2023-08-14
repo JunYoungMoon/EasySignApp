@@ -51,14 +51,14 @@ public class SecurityConfig {
                 .anyRequest().authenticated() // 그 외의 URL은 인증된 사용자만 접근 가능
                 .and()
                 .headers(headers ->
-                        headers.contentSecurityPolicy("script-src 'self'")) // CSP로 XSS 공격을 방지
-                .oauth2Login()
-                .loginPage("/login")
-                .defaultSuccessUrl("/success")
-                .and()
-                .logout()
-                .logoutSuccessUrl("/login")
-                .and();
+                        headers.contentSecurityPolicy("script-src 'self'")); // CSP로 XSS 공격을 방지
+//                .oauth2Login()
+//                .loginPage("/login")
+//                .defaultSuccessUrl("/success")
+//                .and()
+//                .logout()
+//                .logoutSuccessUrl("/login")
+//                .and();
 
         return http.build();
     }

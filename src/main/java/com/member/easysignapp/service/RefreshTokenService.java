@@ -15,9 +15,9 @@ import java.util.Optional;
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public void saveRefreshToken(String email, String token, Instant expiryDate) {
+    public void saveRefreshToken(String id, String token, Instant expiryDate) {
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setEmail(email);
+        refreshToken.setId(id);
         refreshToken.setToken(token);
         refreshToken.setExpiryDate(expiryDate);
         refreshTokenRepository.save(refreshToken);

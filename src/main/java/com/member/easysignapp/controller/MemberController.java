@@ -18,16 +18,16 @@ public class MemberController {
 
     @PostMapping("/signup")
     public Member signUp(@RequestBody MemberRequest request) {
-        return memberService.signUp(request.getEmail(), request.getPassword(), request.getRoles());
+        return memberService.signUp(request.getId(), request.getEmail(), request.getPassword(), request.getRoles());
     }
 
     @PostMapping("/login")
     public TokenInfo login(@RequestBody MemberRequest request) {
 
-        String email = request.getEmail();
+        String id = request.getId();
         String password = request.getPassword();
 
-        return memberService.login(email, password);
+        return memberService.login(id, password);
     }
 
     @PostMapping("/test")

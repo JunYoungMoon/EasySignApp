@@ -34,25 +34,26 @@ public class MemberServiceTest {
     @Test
     void signUp_ValidInput_Success() {
         // Given
+        String id = "test";
         String email = "test@example.com";
         String password = "testpassword";
         List<String> roles = new ArrayList<>();
         roles.add("ROLE_USER");
 
-        when(memberRepository.existsByEmail(email)).thenReturn(false);
+        when(memberRepository.existsById(id)).thenReturn(false);
         when(passwordEncoder.encode(password)).thenReturn("hashedPassword");
         when(memberRepository.save(any(Member.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Member result = memberService.signUp(email, password, roles);
+        Member result = memberService.signUp(id, email, password, roles);
 
         // Then
-        verify(memberRepository, times(1)).existsByEmail(email);
+        verify(memberRepository, times(1)).existsById(id);
         verify(passwordEncoder, times(1)).encode(password);
         verify(memberRepository, times(1)).save(any(Member.class));
 
         // Additional assertions if necessary
-         assertEquals(email, result.getEmail());
+         assertEquals(id, result.getEmail());
          assertEquals(roles, result.getRoles());
          assertEquals("hashedPassword", result.getPassword());
     }
