@@ -21,7 +21,7 @@ public class CustomCsrfFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (isMobileRequest(request) || request.getRequestURI().equals("/getcsrf")) {
+        if (isMobileRequest(request) || request.getRequestURI().equals("/getcsrf") || isOAuthLoginRequest(request)) {
             // 모바일일때와 getcsrf일때 CSRF 검증 체크 스킵
             filterChain.doFilter(request, response);
         } else {
@@ -46,5 +46,27 @@ public class CustomCsrfFilter extends OncePerRequestFilter {
     private boolean isMobileRequest(HttpServletRequest request) {
         String userAgent = request.getHeader("User-Agent");
         return userAgent != null && userAgent.contains(MOBILE_USER_AGENT);
+    }
+
+    private boolean isOAuthLoginRequest(HttpServletRequest request) {
+        String[] segments = request.getRequestURI().split("/"); // URL 세그먼트를 분리
+        String provider = segments[segments.length - 1]; // 마지막 세그먼트
+
+        String oauthLoginPath;
+
+        // 공급자별로 로그인 요청 URL 패턴을 설정
+        switch (provider) {
+            case "google":
+                oauthLoginPath = "/login/oauth2/code/google"; // 구글 OAuth 로그인 요청 URL 패턴
+                break;
+            case "facebook":
+                oauthLoginPath = "/login/oauth2/code/facebook"; // 페이스북 OAuth 로그인 요청 URL 패턴
+                break;
+            // 다른 공급자의 경우도 필요한대로 추가
+            default:
+                return false; // 처리할 공급자가 없으면 false 반환
+        }
+
+        return request.getRequestURI().equals(oauthLoginPath);
     }
 }

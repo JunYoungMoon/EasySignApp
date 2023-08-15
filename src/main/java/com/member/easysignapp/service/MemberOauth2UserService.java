@@ -2,6 +2,7 @@ package com.member.easysignapp.service;
 
 import com.member.easysignapp.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -13,10 +14,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MemberOauth2UserService extends DefaultOAuth2UserService {
 
-    private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
+//    private final MemberRepository memberRepository;
+//    private final PasswordEncoder passwordEncoder;
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         return super.loadUser(userRequest);
+    }
+
+    public void socialLogin(String code, String registrationId) {
+        System.out.println("code = " + code);
+        System.out.println("registrationId = " + registrationId);
     }
 }
