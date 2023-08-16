@@ -1,47 +1,31 @@
 package com.member.easysignapp.domain;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Setter
 @Getter
 @Entity
-public class MemberSocial implements OAuth2User {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class MemberSocial{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
-    private Long id;
+    private String id;
     private String provider;
     private String providerId;
     private String email;
 
-    @Override
-    public Map<String, Object> getAttributes() {
-        // OAuth2 공급자로부터 받은 사용자 정보를 맵으로 반환
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("email", getEmail());
-        // 다른 사용자 정보도 필요한 경우 추가로 넣어주면 된다.
-        return attributes;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        // 사용자의 고유 식별자를 반환 (일반적으로 이메일 등)
-        return getEmail();
+    @Builder
+    public MemberSocial(Long idx, String id, String provider, String providerId, String email) {
+        this.idx = idx;
+        this.id = id;
+        this.provider = provider;
+        this.providerId = providerId;
+        this.email = email;
     }
 }

@@ -13,6 +13,6 @@ public class OAuthLoginController {
 
     @GetMapping("/code/{registrationId}")
     public void googleLogin(@RequestParam String code, @PathVariable String registrationId) {
-        memberOauth2UserService.socialLogin(code, registrationId);
+//        memberOauth2UserService.socialLogin(code, registrationId);
     }
 }
