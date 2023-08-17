@@ -1,6 +1,6 @@
 package com.member.easysignapp.controller;
 
-import com.member.easysignapp.service.MemberOauth2UserService;
+import com.member.easysignapp.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping(value = "/login/oauth2", produces = "application/json")
 public class OAuthLoginController {
-    private final MemberOauth2UserService memberOauth2UserService;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @GetMapping("/code/{registrationId}")
     public void googleLogin(@RequestParam String code, @PathVariable String registrationId) {

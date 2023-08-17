@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member implements UserDetails {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
@@ -24,7 +24,7 @@ public class Member implements UserDetails {
     private String password;
 
     @Builder
-    public Member(Long idx, String id, String email, String password, List<String> roles) {
+    public User(Long idx, String id, String email, String password, List<String> roles) {
         this.idx = idx;
         this.id = id;
         this.email = email;

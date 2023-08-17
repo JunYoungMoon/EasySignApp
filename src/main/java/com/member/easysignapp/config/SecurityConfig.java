@@ -1,9 +1,7 @@
 package com.member.easysignapp.config;
 
-import com.member.easysignapp.security.CustomCsrfFilter;
-import com.member.easysignapp.security.JwtAuthenticationFilter;
 import com.member.easysignapp.security.JwtTokenProvider;
-import com.member.easysignapp.service.MemberOauth2UserService;
+import com.member.easysignapp.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,9 +11,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 @Configuration
@@ -23,7 +19,7 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberOauth2UserService memberOauth2UserService;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public CsrfTokenRepository csrfTokenRepository() {
@@ -48,7 +44,7 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // 세션을 생성하지 않고, 요청마다 인증을 수행 JWT 방식
                 .and()
                 .authorizeRequests()
-                    .antMatchers("/signup", "/getcsrf", "/login").permitAll() // 로그인 없이 접근 가능한 URL
+                    .antMatchers("/signup", "/getcsrf", "/login", "/login/**").permitAll() // 로그인 없이 접근 가능한 URL
                 .anyRequest().authenticated() // 그 외의 URL은 인증된 사용자만 접근 가능
                 .and()
                 .headers(headers ->
@@ -58,7 +54,7 @@ public class SecurityConfig {
 //                .defaultSuccessUrl("/oauth2/success") // 로그인 성공 후 리다이렉트될 URL
 //                .failureUrl("/oauth2/error") // 로그인 실패 시 리다이렉트될 URL
                 .userInfoEndpoint()
-                .userService(memberOauth2UserService);
+                .userService(customOAuth2UserService);
 
         return http.build();
     }

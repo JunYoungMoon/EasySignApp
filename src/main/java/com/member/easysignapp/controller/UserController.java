@@ -1,24 +1,24 @@
 package com.member.easysignapp.controller;
 
-import com.member.easysignapp.domain.Member;
+import com.member.easysignapp.domain.User;
 import com.member.easysignapp.domain.TokenInfo;
 import com.member.easysignapp.dto.MemberRequest;
-import com.member.easysignapp.service.MemberService;
+import com.member.easysignapp.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class MemberController {
-    private final MemberService memberService;
+public class UserController {
+    private final UserService userService;
 
-    public MemberController(MemberService memberService) {
-        this.memberService = memberService;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @PostMapping("/signup")
-    public Member signUp(@RequestBody MemberRequest request) {
-        return memberService.signUp(request.getId(), request.getEmail(), request.getPassword(), request.getRoles());
+    public User signUp(@RequestBody MemberRequest request) {
+        return userService.signUp(request.getId(), request.getEmail(), request.getPassword(), request.getRoles());
     }
 
     @PostMapping("/login")
@@ -27,7 +27,7 @@ public class MemberController {
         String id = request.getId();
         String password = request.getPassword();
 
-        return memberService.login(id, password);
+        return userService.login(id, password);
     }
 
     @PostMapping("/test")

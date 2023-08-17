@@ -1,14 +1,13 @@
 package com.member.easysignapp.service;
 
-import com.member.easysignapp.domain.Member;
+import com.member.easysignapp.domain.User;
 import com.member.easysignapp.domain.TokenInfo;
-import com.member.easysignapp.repository.MemberRepository;
+import com.member.easysignapp.repository.UserRepository;
 import com.member.easysignapp.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -16,29 +15,29 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class MemberService {
-    private final MemberRepository memberRepository;
+public class UserService {
+    private final UserRepository userRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
-    public Member signUp(String id, String email, String password, List<String> roles) {
+    public User signUp(String id, String email, String password, List<String> roles) {
         // 이메일 중복 체크
-        if (memberRepository.existsById(id)) {
+        if (userRepository.existsById(id)) {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
 
         // 비밀번호를 Spring Security를 이용하여 해싱하여 저장
         String hashedPassword = passwordEncoder.encode(password);
 
-        Member member = Member.builder()
+        User user = User.builder()
                 .id(id)
                 .password(hashedPassword)
                 .email(email)
                 .roles(roles)
                 .build();
 
-        return memberRepository.save(member);
+        return userRepository.save(user);
     }
 
     public TokenInfo login(String id, String password) {

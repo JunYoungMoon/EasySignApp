@@ -1,9 +1,9 @@
 package com.member.easysignapp.security;
 
-import com.member.easysignapp.domain.Member;
+import com.member.easysignapp.domain.User;
 import com.member.easysignapp.domain.RefreshToken;
 import com.member.easysignapp.domain.TokenInfo;
-import com.member.easysignapp.repository.MemberRepository;
+import com.member.easysignapp.repository.UserRepository;
 import com.member.easysignapp.service.RefreshTokenService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,11 +31,11 @@ public class JwtTokenProvider {
     private final Key key;
     private final RefreshTokenService refreshTokenService;
 
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService, MemberRepository memberRepository) {
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService, UserRepository userRepository) {
         this.refreshTokenService = refreshTokenService;
-        this.memberRepository = memberRepository;
+        this.userRepository = userRepository;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -92,16 +91,16 @@ public class JwtTokenProvider {
             String id = claims.getSubject();
 
             // 이메일을 기반으로 Member 테이블 row 찾기
-            Optional<Member> member = memberRepository.findById(id);
+            Optional<User> member = userRepository.findById(id);
 
             if (member.isPresent()) {
-                Member memberEntity = member.get();
+                User userEntity = member.get();
 
                 // member 객체에서 권한 정보 가져오기
-                Collection<? extends GrantedAuthority> authorities = memberEntity.getAuthorities();
+                Collection<? extends GrantedAuthority> authorities = userEntity.getAuthorities();
 
                 // UserDetails 객체를 만들어서 Authentication 리턴
-                UserDetails principal = new User(claims.getSubject(), "", authorities);
+                UserDetails principal = new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities);
                 return new UsernamePasswordAuthenticationToken(principal, "", authorities);
 
             } else {
@@ -119,7 +118,7 @@ public class JwtTokenProvider {
                             .collect(Collectors.toList());
 
             // UserDetails 객체를 만들어서 Authentication 리턴
-            UserDetails principal = new User(claims.getSubject(), "", authorities);
+            UserDetails principal = new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities);
             return new UsernamePasswordAuthenticationToken(principal, "", authorities);
         }
     }

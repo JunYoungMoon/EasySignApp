@@ -1,7 +1,7 @@
 package com.member.easysignapp.service;
 
-import com.member.easysignapp.domain.Member;
-import com.member.easysignapp.repository.MemberRepository;
+import com.member.easysignapp.domain.User;
+import com.member.easysignapp.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,16 +15,16 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class MemberServiceTest {
+public class UserServiceTest {
 
     @Mock
-    private MemberRepository memberRepository;
+    private UserRepository userRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private MemberService memberService;
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
@@ -40,17 +40,17 @@ public class MemberServiceTest {
         List<String> roles = new ArrayList<>();
         roles.add("ROLE_USER");
 
-        when(memberRepository.existsById(id)).thenReturn(false);
+        when(userRepository.existsById(id)).thenReturn(false);
         when(passwordEncoder.encode(password)).thenReturn("hashedPassword");
-        when(memberRepository.save(any(Member.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Member result = memberService.signUp(id, email, password, roles);
+        User result = userService.signUp(id, email, password, roles);
 
         // Then
-        verify(memberRepository, times(1)).existsById(id);
+        verify(userRepository, times(1)).existsById(id);
         verify(passwordEncoder, times(1)).encode(password);
-        verify(memberRepository, times(1)).save(any(Member.class));
+        verify(userRepository, times(1)).save(any(User.class));
 
         // Additional assertions if necessary
          assertEquals(id, result.getEmail());
