@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping(value = "/login/oauth2", produces = "application/json")
 public class OAuthLoginController {
-
     private final MemberOauth2UserService memberOauth2UserService;
 
     @GetMapping("/code/{registrationId}")

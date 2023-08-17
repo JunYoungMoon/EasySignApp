@@ -1,8 +1,6 @@
 package com.member.easysignapp.domain;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +14,7 @@ import java.util.stream.Collectors;
 @Setter
 @Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,13 +23,21 @@ public class Member implements UserDetails {
     private String email;
     private String password;
 
+    @Builder
+    public Member(Long idx, String id, String email, String password, List<String> roles) {
+        this.idx = idx;
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.roles = roles;
+    }
+
     @Override
     public String getUsername() {
         return id;
     }
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @Builder.Default
     private List<String> roles = new ArrayList<>();
 
     @Override

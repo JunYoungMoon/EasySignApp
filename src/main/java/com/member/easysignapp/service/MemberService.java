@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -17,9 +18,9 @@ import java.util.*;
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
     public Member signUp(String id, String email, String password, List<String> roles) {
         // 이메일 중복 체크
@@ -27,14 +28,15 @@ public class MemberService {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
 
-        Member member = new Member();
-        member.setId(id);
-        member.setEmail(email);
-        member.setRoles(roles);
-
         // 비밀번호를 Spring Security를 이용하여 해싱하여 저장
         String hashedPassword = passwordEncoder.encode(password);
-        member.setPassword(hashedPassword);
+
+        Member member = Member.builder()
+                .id(id)
+                .password(hashedPassword)
+                .email(email)
+                .roles(roles)
+                .build();
 
         return memberRepository.save(member);
     }

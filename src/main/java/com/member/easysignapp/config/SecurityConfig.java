@@ -22,7 +22,6 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberOauth2UserService memberOauth2UserService;
 
