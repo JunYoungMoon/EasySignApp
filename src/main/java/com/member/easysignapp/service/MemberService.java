@@ -1,8 +1,8 @@
 package com.member.easysignapp.service;
 
-import com.member.easysignapp.domain.User;
+import com.member.easysignapp.domain.Member;
 import com.member.easysignapp.domain.TokenInfo;
-import com.member.easysignapp.repository.UserRepository;
+import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,29 +15,29 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
-    private final UserRepository userRepository;
+public class MemberService {
+    private final MemberRepository memberRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
-    public User signUp(String id, String email, String password, List<String> roles) {
+    public Member signUp(String id, String email, String password, List<String> roles) {
         // 이메일 중복 체크
-        if (userRepository.existsById(id)) {
+        if (memberRepository.existsById(id)) {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
 
         // 비밀번호를 Spring Security를 이용하여 해싱하여 저장
         String hashedPassword = passwordEncoder.encode(password);
 
-        User user = User.builder()
+        Member member = Member.builder()
                 .id(id)
                 .password(hashedPassword)
                 .email(email)
                 .roles(roles)
                 .build();
 
-        return userRepository.save(user);
+        return memberRepository.save(member);
     }
 
     public TokenInfo login(String id, String password) {

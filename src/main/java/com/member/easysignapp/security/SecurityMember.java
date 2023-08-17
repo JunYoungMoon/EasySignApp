@@ -1,50 +1,47 @@
-package com.member.easysignapp.domain;
+package com.member.easysignapp.security;
 
-import lombok.*;
+import com.member.easysignapp.domain.Member;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Setter
 @Getter
-@Entity
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User implements UserDetails {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class SecurityMember implements UserDetails {
+
     private Long idx;
     private String id;
     private String email;
     private String password;
+    private List<String> roles;
 
-    @Builder
-    public User(Long idx, String id, String email, String password, List<String> roles) {
-        this.idx = idx;
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.roles = roles;
+    public SecurityMember(Member member) {
+        this.idx = member.getIdx();
+        this.id = member.getId();
+        this.email = member.getEmail();
+        this.password = member.getPassword();
+        this.roles = member.getRoles();
     }
-
-    @Override
-    public String getUsername() {
-        return id;
-    }
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<String> roles = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getUsername() {
+        return id;
     }
 
     @Override
@@ -66,4 +63,6 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+
 }

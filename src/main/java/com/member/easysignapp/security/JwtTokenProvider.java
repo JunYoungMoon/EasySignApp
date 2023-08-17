@@ -1,9 +1,9 @@
 package com.member.easysignapp.security;
 
-import com.member.easysignapp.domain.User;
+import com.member.easysignapp.domain.Member;
 import com.member.easysignapp.domain.RefreshToken;
 import com.member.easysignapp.domain.TokenInfo;
-import com.member.easysignapp.repository.UserRepository;
+import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.service.RefreshTokenService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -31,11 +31,11 @@ public class JwtTokenProvider {
     private final Key key;
     private final RefreshTokenService refreshTokenService;
 
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService, UserRepository userRepository) {
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService, MemberRepository memberRepository) {
         this.refreshTokenService = refreshTokenService;
-        this.userRepository = userRepository;
+        this.memberRepository = memberRepository;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -90,14 +90,14 @@ public class JwtTokenProvider {
             // 클레임에서 이메일 정보 가져오기
             String id = claims.getSubject();
 
-            // 이메일을 기반으로 Member 테이블 row 찾기
-            Optional<User> member = userRepository.findById(id);
+            // 이메일을 기반으로 User 테이블 row 찾기
+            Optional<Member> user = memberRepository.findById(id);
 
-            if (member.isPresent()) {
-                User userEntity = member.get();
+            if (user.isPresent()) {
+                SecurityMember securityMember = new SecurityMember(user.get());
 
                 // member 객체에서 권한 정보 가져오기
-                Collection<? extends GrantedAuthority> authorities = userEntity.getAuthorities();
+                Collection<? extends GrantedAuthority> authorities = securityMember.getAuthorities();
 
                 // UserDetails 객체를 만들어서 Authentication 리턴
                 UserDetails principal = new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities);

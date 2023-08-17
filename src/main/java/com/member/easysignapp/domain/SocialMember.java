@@ -11,7 +11,7 @@ import javax.persistence.Id;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SocialUser {
+public class SocialMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
@@ -20,7 +20,7 @@ public class SocialUser {
     private String providerId;
 
     @Builder
-    public SocialUser(Long idx, String id, String provider, String providerId) {
+    public SocialMember(Long idx, String id, String provider, String providerId) {
         this.idx = idx;
         this.id = id;
         this.provider = provider;
