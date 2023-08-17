@@ -7,6 +7,7 @@ import com.member.easysignapp.repository.SocialMemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -52,6 +53,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             List<String> roles = new ArrayList<>();
             roles.add("user");
 
+            //TODO 인가 처리 필요
+//            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+//            authorities.add(new SimpleGrantedAuthority("ROLE_USER")); // 사용자에게 "ROLE_USER" 역할 부여
+
             member = Member.builder()
                     .id(Id)
                     .email(oAuth2User.getAttribute("email"))
@@ -67,5 +72,4 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         return oAuth2User;
     }
-
 }

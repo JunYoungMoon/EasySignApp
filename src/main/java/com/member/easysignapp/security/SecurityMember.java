@@ -8,16 +8,17 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SecurityMember implements UserDetails {
-
+public class SecurityMember implements UserDetails, OAuth2User {
     private Long idx;
     private String id;
     private String email;
@@ -30,6 +31,11 @@ public class SecurityMember implements UserDetails {
         this.email = member.getEmail();
         this.password = member.getPassword();
         this.roles = member.getRoles();
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return null;
     }
 
     @Override
@@ -65,4 +71,8 @@ public class SecurityMember implements UserDetails {
     }
 
 
+    @Override
+    public String getName() {
+        return null;
+    }
 }
