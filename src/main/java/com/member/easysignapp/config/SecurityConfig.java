@@ -44,8 +44,9 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // 세션을 생성하지 않고, 요청마다 인증을 수행 JWT 방식
                 .and()
                 .authorizeRequests()
-                    .antMatchers("/signup", "/getcsrf", "/login", "/login/**").permitAll() // 로그인 없이 접근 가능한 URL
-                .anyRequest().authenticated() // 그 외의 URL은 인증된 사용자만 접근 가능
+//                    .antMatchers("/signup", "/getcsrf", "/login**").permitAll() // 로그인 없이 접근 가능한 URL
+//                .anyRequest().authenticated() // 그 외의 URL은 인증된 사용자만 접근 가능
+                .anyRequest().permitAll() // 그 외의 URL은 인증된 사용자만 접근 가능
                 .and()
                 .headers(headers ->
                         headers.contentSecurityPolicy("script-src 'self'")) // CSP로 XSS 공격을 방지

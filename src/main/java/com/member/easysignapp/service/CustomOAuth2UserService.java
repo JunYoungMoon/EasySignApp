@@ -4,6 +4,7 @@ import com.member.easysignapp.domain.Member;
 import com.member.easysignapp.domain.SocialMember;
 import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.repository.SocialMemberRepository;
+import com.member.easysignapp.security.SecurityMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -68,7 +69,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             } catch (DataAccessException e) {
                 throw new RuntimeException("Failed to save member: " + e.getMessage(), e);
             }
+        }else{
+            member = memberRepository.findById(Id);
         }
+
+        return new SecurityMember(member, oAuth2User.getAttributes());
 
         return oAuth2User;
     }
