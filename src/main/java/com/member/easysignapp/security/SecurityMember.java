@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SecurityMember implements UserDetails, OAuth2User {
+    private Member member;
     private Long idx;
     private String id;
     private String email;
@@ -35,18 +36,18 @@ public class SecurityMember implements UserDetails, OAuth2User {
         this.roles = member.getRoles();
     }
 
-    public SecurityMember(Member member, Map<String, Object> attributes) {
+    @Override
+    public Map<String, Object> getAttributes() {
+        return null;
+    }
+
+    public SecurityMember(Member member, Map<String, Object> attributes ) {
         this.idx = member.getIdx();
         this.id = member.getId();
         this.email = member.getEmail();
         this.password = member.getPassword();
         this.roles = member.getRoles();
         this.attributes = attributes;
-    }
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return null;
     }
 
     @Override

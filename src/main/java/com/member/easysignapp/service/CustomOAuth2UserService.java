@@ -25,6 +25,7 @@ import java.util.Optional;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final SocialMemberRepository socialMemberRepository;
     private final MemberRepository memberRepository;
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
@@ -32,13 +33,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String provider = userRequest.getClientRegistration().getRegistrationId();
         String providerId = oAuth2User.getAttribute("sub");
-        String Id = provider + "_" +providerId;
+        String Id = provider + "_" + providerId;
 
         Optional<SocialMember> optionalUser = socialMemberRepository.findById(Id);
         SocialMember socialMember;
         Member member;
 
-        if(optionalUser.isEmpty()) {
+        if (optionalUser.isEmpty()) {
             socialMember = SocialMember.builder()
                     .id(Id)
                     .provider(provider)
@@ -54,10 +55,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             List<String> roles = new ArrayList<>();
             roles.add("user");
 
-            //TODO 인가 처리 필요
-//            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-//            authorities.add(new SimpleGrantedAuthority("ROLE_USER")); // 사용자에게 "ROLE_USER" 역할 부여
-
             member = Member.builder()
                     .id(Id)
                     .email(oAuth2User.getAttribute("email"))
@@ -69,12 +66,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             } catch (DataAccessException e) {
                 throw new RuntimeException("Failed to save member: " + e.getMessage(), e);
             }
-        }else{
-            member = memberRepository.findById(Id);
+        } else {
+            Optional<Member> foundMember = memberRepository.findById(Id);
+            if (foundMember.isPresent()) {
+                member = foundMember.get();
+            } else {
+                throw new RuntimeException("Member not found for ID: " + Id);
+            }
         }
 
         return new SecurityMember(member, oAuth2User.getAttributes());
-
-        return oAuth2User;
     }
 }
