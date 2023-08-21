@@ -52,8 +52,8 @@ public class SecurityConfig {
                         headers.contentSecurityPolicy("script-src 'self'")) // CSP로 XSS 공격을 방지
                 .oauth2Login() // OAuth 2.0 로그인 설정 시작
 //                .loginPage("/login") // 사용자를 내가 만든 로그인 페이지로 리다이렉트
-                .defaultSuccessUrl("/login/oauth2/code/google") // 로그인 성공 후 리다이렉트될 URL
-                .failureUrl("/oauth2/error") // 로그인 실패 시 리다이렉트될 URL
+//                .defaultSuccessUrl("/login/oauth2/code/google") // 로그인 성공 후 리다이렉트될 URL
+//                .failureUrl("/oauth2/error") // 로그인 실패 시 리다이렉트될 URL
                 .userInfoEndpoint()
                 .userService(customOAuth2UserService);
 
