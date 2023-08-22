@@ -1,6 +1,7 @@
 package com.member.easysignapp.security;
 
 import org.springframework.security.web.csrf.*;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -8,6 +9,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class CustomCsrfFilter extends OncePerRequestFilter {
 
@@ -19,9 +22,20 @@ public class CustomCsrfFilter extends OncePerRequestFilter {
         this.csrfTokenRepository = csrfTokenRepository;
     }
 
+    private final List<AntPathRequestMatcher> csrfSkipMatchers = Arrays.asList(
+            new AntPathRequestMatcher("/getcsrf"),
+            new AntPathRequestMatcher("/login/**"),
+            new AntPathRequestMatcher("/oauth2/**"),
+            new AntPathRequestMatcher("/")
+    );
+
+    private boolean isCsrfSkipRequest(HttpServletRequest request) {
+        return csrfSkipMatchers.stream().anyMatch(matcher -> matcher.matches(request));
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (isMobileRequest(request) || request.getRequestURI().equals("/getcsrf") || isOAuthLoginRequest(request)) {
+        if (isMobileRequest(request) || isCsrfSkipRequest(request)) {
             // 모바일일때와 getcsrf일때 CSRF 검증 체크 스킵
             filterChain.doFilter(request, response);
         } else {
@@ -46,27 +60,5 @@ public class CustomCsrfFilter extends OncePerRequestFilter {
     private boolean isMobileRequest(HttpServletRequest request) {
         String userAgent = request.getHeader("User-Agent");
         return userAgent != null && userAgent.contains(MOBILE_USER_AGENT);
-    }
-
-    private boolean isOAuthLoginRequest(HttpServletRequest request) {
-        String[] segments = request.getRequestURI().split("/"); // URL 세그먼트를 분리
-        String provider = segments[segments.length - 1]; // 마지막 세그먼트
-
-        String oauthLoginPath;
-
-        // 공급자별로 로그인 요청 URL 패턴을 설정
-        switch (provider) {
-            case "google":
-                oauthLoginPath = "/login/oauth2/code/google"; // 구글 OAuth 로그인 요청 URL 패턴
-                break;
-            case "facebook":
-                oauthLoginPath = "/login/oauth2/code/facebook"; // 페이스북 OAuth 로그인 요청 URL 패턴
-                break;
-            // 다른 공급자의 경우도 필요한대로 추가
-            default:
-                return false; // 처리할 공급자가 없으면 false 반환
-        }
-
-        return request.getRequestURI().equals(oauthLoginPath);
     }
 }

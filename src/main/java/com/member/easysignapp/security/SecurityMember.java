@@ -27,7 +27,6 @@ public class SecurityMember implements UserDetails, OAuth2User {
     private List<String> roles;
     private Map<String, Object> attributes;
 
-
     public SecurityMember(Member member) {
         this.idx = member.getIdx();
         this.id = member.getId();
@@ -81,7 +80,6 @@ public class SecurityMember implements UserDetails, OAuth2User {
     public boolean isEnabled() {
         return true;
     }
-
 
     @Override
     public String getName() {
