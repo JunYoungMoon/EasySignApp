@@ -16,10 +16,12 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     public void saveRefreshToken(String id, String token, Instant expiryDate) {
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setId(id);
-        refreshToken.setToken(token);
-        refreshToken.setExpiryDate(expiryDate);
+        RefreshToken refreshToken =
+                RefreshToken.builder()
+                .id(id)
+                .token(token)
+                .expiryDate(expiryDate)
+                .build();
         refreshTokenRepository.save(refreshToken);
     }
 

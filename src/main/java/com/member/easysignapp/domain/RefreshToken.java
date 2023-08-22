@@ -1,15 +1,14 @@
 package com.member.easysignapp.domain;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
 
-@Setter
 @Getter
 @Entity
 @Table(name = "refresh_tokens")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,4 +22,12 @@ public class RefreshToken {
 
     @Column(nullable = false)
     private Instant expiryDate;
+
+    @Builder
+    public RefreshToken(Long idx, String id, String token, Instant expiryDate) {
+        this.idx = idx;
+        this.id = id;
+        this.token = token;
+        this.expiryDate = expiryDate;
+    }
 }

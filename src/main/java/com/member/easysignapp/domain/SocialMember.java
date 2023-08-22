@@ -2,12 +2,8 @@ package com.member.easysignapp.domain;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
-@Setter
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -15,8 +11,11 @@ public class SocialMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
+    @Column(nullable = false)
     private String id;
+    @Column(nullable = false)
     private String provider;
+    @Column(nullable = false)
     private String providerId;
 
     @Builder

@@ -67,7 +67,7 @@ public class SecurityConfig {
                 .antMatchers(patterns).permitAll()
                 .anyRequest().authenticated(); // 그 외의 URL은 인증된 사용자만 접근 가능
 
-        // OAuth 2.0 로그인 설정 시작
+        //OAuth 2.0 로그인 설정 시작
         http
                 .oauth2Login()
                 .successHandler(oAuth2LoginSuccessHandler)

@@ -35,11 +35,6 @@ public class SecurityMember implements UserDetails, OAuth2User {
         this.roles = member.getRoles();
     }
 
-    @Override
-    public Map<String, Object> getAttributes() {
-        return null;
-    }
-
     public SecurityMember(Member member, Map<String, Object> attributes ) {
         this.idx = member.getIdx();
         this.id = member.getId();
@@ -52,13 +47,24 @@ public class SecurityMember implements UserDetails, OAuth2User {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream()
+//                .map(role -> new SimpleGrantedAuthority(role))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
     }
 
     @Override
+    public Map<String, Object> getAttributes() {
+        return null;
+    }
+
+    @Override
     public String getUsername() {
         return id;
+    }
+
+    @Override
+    public String getName() {
+        return null;
     }
 
     @Override
@@ -79,10 +85,5 @@ public class SecurityMember implements UserDetails, OAuth2User {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    @Override
-    public String getName() {
-        return null;
     }
 }
