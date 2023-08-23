@@ -1,6 +1,7 @@
 package com.member.easysignapp.service;
 
 import com.member.easysignapp.domain.Member;
+import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,12 +41,14 @@ public class MemberServiceTest {
         List<String> roles = new ArrayList<>();
         roles.add("ROLE_USER");
 
+        MemberRequest request = new MemberRequest();
+
         when(memberRepository.existsById(id)).thenReturn(false);
         when(passwordEncoder.encode(password)).thenReturn("hashedPassword");
         when(memberRepository.save(any(Member.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Member result = memberService.signUp(id, email, password, roles);
+        Member result = memberService.signUp(request);
 
         // Then
         verify(memberRepository, times(1)).existsById(id);

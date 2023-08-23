@@ -1,5 +1,6 @@
 package com.member.easysignapp.domain;
 
+import com.member.easysignapp.enums.AuthProvider;
 import lombok.*;
 
 import javax.persistence.*;
@@ -14,12 +15,13 @@ public class SocialMember {
     @Column(nullable = false)
     private String id;
     @Column(nullable = false)
-    private String provider;
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
     @Column(nullable = false)
     private String providerId;
 
     @Builder
-    public SocialMember(Long idx, String id, String provider, String providerId) {
+    public SocialMember(Long idx, String id, AuthProvider provider, String providerId) {
         this.idx = idx;
         this.id = id;
         this.provider = provider;

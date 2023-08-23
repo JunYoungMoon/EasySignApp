@@ -17,13 +17,16 @@ public class Member {
     private String id;
     @Column(nullable = false)
     private String email;
+    @Column(nullable = false)
+    private String name;
     private String password;
 
     @Builder
-    public Member(Long idx, String id, String email, String password, List<String> roles) {
+    public Member(Long idx, String id, String email, String name, String password, List<String> roles) {
         this.idx = idx;
         this.id = id;
         this.email = email;
+        this.name = name;
         this.password = password;
         this.roles = roles;
     }

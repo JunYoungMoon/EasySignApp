@@ -2,13 +2,15 @@ package com.member.easysignapp.service;
 
 import com.member.easysignapp.domain.Member;
 import com.member.easysignapp.domain.SocialMember;
+import com.member.easysignapp.enums.AuthProvider;
+import com.member.easysignapp.oauth2.OAuth2UserInfo;
+import com.member.easysignapp.oauth2.OAuth2UserInfoFactory;
 import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.repository.SocialMemberRepository;
 import com.member.easysignapp.security.SecurityMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -31,9 +33,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         log.info("getAttributes : {}", oAuth2User.getAttributes());
 
-        String provider = userRequest.getClientRegistration().getRegistrationId();
-        String providerId = oAuth2User.getAttribute("sub");
-        String Id = provider + "_" + providerId;
+        return processOAuth2User(userRequest, oAuth2User);
+    }
+
+    protected OAuth2User processOAuth2User(OAuth2UserRequest oAuth2UserRequest, OAuth2User oAuth2User) {
+        AuthProvider authProvider = AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId().toUpperCase());
+        OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(authProvider, oAuth2User.getAttributes());
+
+        String Id = authProvider + "_" + oAuth2UserInfo.getOAuth2Id();
 
         Optional<SocialMember> optionalUser = socialMemberRepository.findById(Id);
         SocialMember socialMember;
@@ -42,8 +49,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if (optionalUser.isEmpty()) {
             socialMember = SocialMember.builder()
                     .id(Id)
-                    .provider(provider)
-                    .providerId(providerId)
+                    .provider(authProvider)
+                    .providerId(oAuth2UserInfo.getOAuth2Id())
                     .build();
 
             try {
@@ -57,7 +64,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             member = Member.builder()
                     .id(Id)
-                    .email(oAuth2User.getAttribute("email"))
+                    .email(oAuth2UserInfo.getEmail())
+                    .name(oAuth2UserInfo.getName())
                     .roles(roles)
                     .build();
 

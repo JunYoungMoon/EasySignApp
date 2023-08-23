@@ -2,6 +2,7 @@ package com.member.easysignapp.service;
 
 import com.member.easysignapp.domain.Member;
 import com.member.easysignapp.domain.TokenInfo;
+import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.*;
-
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -21,29 +20,30 @@ public class MemberService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
-    public Member signUp(String id, String email, String password, List<String> roles) {
+    public Member signUp(MemberRequest request) {
         // 이메일 중복 체크
-        if (memberRepository.existsById(id)) {
+        if (memberRepository.existsById(request.getId())) {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
 
         // 비밀번호를 Spring Security를 이용하여 해싱하여 저장
-        String hashedPassword = passwordEncoder.encode(password);
+        String hashedPassword = passwordEncoder.encode(request.getPassword());
 
         Member member = Member.builder()
-                .id(id)
+                .id(request.getId())
                 .password(hashedPassword)
-                .email(email)
-                .roles(roles)
+                .email(request.getEmail())
+                .name(request.getName())
+                .roles(request.getRoles())
                 .build();
 
         return memberRepository.save(member);
     }
 
-    public TokenInfo login(String id, String password) {
+    public TokenInfo login(MemberRequest request) {
         //사용자의 인증을 위해 이 객체를 사용하여 사용자가 제공한 아이디와 비밀번호를 저장
         //이 토큰은 사용자 인증을 위해 사용되며, 인증 매니저를 통해 실제 인증이 수행
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(id, password);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getId(), request.getPassword());
 
         //authenticationManagerBuilder는 스프링 시큐리티 설정에서 정의한 AuthenticationManager를 생성하는 빌더 클래스이고
         //getObject() 메서드를 사용하여 실제 AuthenticationManager 객체를 가져온다.
