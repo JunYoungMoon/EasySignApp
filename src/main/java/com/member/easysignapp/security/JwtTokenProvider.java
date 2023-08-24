@@ -1,8 +1,8 @@
 package com.member.easysignapp.security;
 
-import com.member.easysignapp.domain.Member;
-import com.member.easysignapp.domain.RefreshToken;
-import com.member.easysignapp.domain.TokenInfo;
+import com.member.easysignapp.entity.Member;
+import com.member.easysignapp.entity.RefreshToken;
+import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.service.RefreshTokenService;
 import io.jsonwebtoken.*;
@@ -102,7 +102,6 @@ public class JwtTokenProvider {
                 // UserDetails 객체를 만들어서 Authentication 리턴
                 UserDetails principal = new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities);
                 return new UsernamePasswordAuthenticationToken(principal, "", authorities);
-
             } else {
                 throw new RuntimeException("해당 이메일을 가진 사용자가 없습니다.");
             }

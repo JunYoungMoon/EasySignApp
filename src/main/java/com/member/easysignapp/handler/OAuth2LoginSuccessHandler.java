@@ -1,7 +1,7 @@
 package com.member.easysignapp.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.member.easysignapp.domain.TokenInfo;
+import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

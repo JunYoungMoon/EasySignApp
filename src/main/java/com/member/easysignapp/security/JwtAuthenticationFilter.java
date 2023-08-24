@@ -1,7 +1,7 @@
 package com.member.easysignapp.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.member.easysignapp.domain.TokenInfo;
+import com.member.easysignapp.dto.TokenInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -33,6 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 jwtTokenProvider.validateToken(token);
                 // 3. 토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext에 저장
                 Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                // 4. 인증 객체 생성 및 보안 컨텍스트에 설정
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (ExpiredJwtException e) {

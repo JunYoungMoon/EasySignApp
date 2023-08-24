@@ -1,7 +1,7 @@
 package com.member.easysignapp.service;
 
-import com.member.easysignapp.domain.Member;
-import com.member.easysignapp.domain.SocialMember;
+import com.member.easysignapp.entity.Member;
+import com.member.easysignapp.entity.SocialMember;
 import com.member.easysignapp.enums.AuthProvider;
 import com.member.easysignapp.oauth2.OAuth2UserInfo;
 import com.member.easysignapp.oauth2.OAuth2UserInfoFactory;

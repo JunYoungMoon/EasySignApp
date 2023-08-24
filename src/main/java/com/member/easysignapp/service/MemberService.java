@@ -1,7 +1,7 @@
 package com.member.easysignapp.service;
 
-import com.member.easysignapp.domain.Member;
-import com.member.easysignapp.domain.TokenInfo;
+import com.member.easysignapp.entity.Member;
+import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.security.JwtTokenProvider;

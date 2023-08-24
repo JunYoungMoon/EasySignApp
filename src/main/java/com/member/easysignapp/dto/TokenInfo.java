@@ -1,4 +1,4 @@
-package com.member.easysignapp.domain;
+package com.member.easysignapp.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,6 +1,6 @@
 package com.member.easysignapp.service;
 
-import com.member.easysignapp.domain.Member;
+import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;

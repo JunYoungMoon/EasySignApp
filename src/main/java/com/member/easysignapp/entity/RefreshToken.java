@@ -1,30 +1,33 @@
-package com.member.easysignapp.domain;
+package com.member.easysignapp.entity;
 
-import com.member.easysignapp.enums.AuthProvider;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.Instant;
 
 @Getter
 @Entity
+@Table(name = "refresh_tokens")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SocialMember {
+public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
+
     @Column(nullable = false)
     private String id;
+
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private AuthProvider provider;
+    private String token;
+
     @Column(nullable = false)
-    private String providerId;
+    private Instant expiryDate;
 
     @Builder
-    public SocialMember(Long idx, String id, AuthProvider provider, String providerId) {
+    public RefreshToken(Long idx, String id, String token, Instant expiryDate) {
         this.idx = idx;
         this.id = id;
-        this.provider = provider;
-        this.providerId = providerId;
+        this.token = token;
+        this.expiryDate = expiryDate;
     }
 }

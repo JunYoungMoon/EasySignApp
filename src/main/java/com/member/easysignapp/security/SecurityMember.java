@@ -1,6 +1,6 @@
 package com.member.easysignapp.security;
 
-import com.member.easysignapp.domain.Member;
+import com.member.easysignapp.entity.Member;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

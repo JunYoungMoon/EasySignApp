@@ -1,7 +1,7 @@
 package com.member.easysignapp.service;
 
 
-import com.member.easysignapp.domain.RefreshToken;
+import com.member.easysignapp.entity.RefreshToken;
 import com.member.easysignapp.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

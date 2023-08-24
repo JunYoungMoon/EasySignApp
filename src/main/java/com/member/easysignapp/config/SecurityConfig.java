@@ -19,8 +19,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
-import javax.servlet.http.HttpServletRequest;
-
 
 @Configuration
 @EnableWebSecurity
