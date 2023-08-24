@@ -40,7 +40,9 @@ spring:
             scope:
               - profile_nickname
               - profile_image
+              - account_email
             client-name: Kakao
+            client-authentication-method : POST
         provider:
           naver:
             authorization_uri: https://nid.naver.com/oauth2.0/authorize

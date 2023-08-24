@@ -4,11 +4,11 @@ import java.util.Map;
 
 public class KakaoOAuth2User extends OAuth2UserInfo {
 
-    private final Integer id;
+    private final Long id;
 
     public KakaoOAuth2User(Map<String, Object> attributes) {
         super((Map<String, Object>) attributes.get("kakao_account"));
-        this.id = (Integer) attributes.get("id");
+        this.id = (Long) attributes.get("id");
     }
 
     @Override
