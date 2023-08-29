@@ -9,6 +9,10 @@ import java.util.List;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        name = "member",
+        indexes = @Index(name = "idx_uuid", columnList = "uuid")
+)
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +25,6 @@ public class Member {
     private String email;
     @Column(nullable = false)
     private String name;
-    @Column(nullable = false)
     private String password;
 
     @Builder

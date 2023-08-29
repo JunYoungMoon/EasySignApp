@@ -22,6 +22,7 @@ public class SecurityMember implements UserDetails, OAuth2User {
     private Member member;
     private Long idx;
     private String id;
+    private String uuid;
     private String email;
     private String password;
     private List<String> roles;
@@ -30,6 +31,7 @@ public class SecurityMember implements UserDetails, OAuth2User {
     public SecurityMember(Member member) {
         this.idx = member.getIdx();
         this.id = member.getId();
+        this.uuid = member.getUuid();
         this.email = member.getEmail();
         this.password = member.getPassword();
         this.roles = member.getRoles();
@@ -38,6 +40,7 @@ public class SecurityMember implements UserDetails, OAuth2User {
     public SecurityMember(Member member, Map<String, Object> attributes ) {
         this.idx = member.getIdx();
         this.id = member.getId();
+        this.uuid = member.getUuid();
         this.email = member.getEmail();
         this.password = member.getPassword();
         this.roles = member.getRoles();
@@ -59,7 +62,7 @@ public class SecurityMember implements UserDetails, OAuth2User {
 
     @Override
     public String getUsername() {
-        return id;
+        return uuid;
     }
 
     @Override

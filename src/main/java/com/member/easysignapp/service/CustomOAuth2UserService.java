@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -62,8 +63,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             List<String> roles = new ArrayList<>();
             roles.add("user");
 
+            //jwt토큰에 보여질 UUID 생성
+            UUID randomUUID = UUID.randomUUID();
+
             member = Member.builder()
                     .id(Id)
+                    .uuid(randomUUID.toString())
                     .email(oAuth2UserInfo.getEmail())
                     .name(oAuth2UserInfo.getName())
                     .roles(roles)

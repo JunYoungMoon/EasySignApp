@@ -15,10 +15,10 @@ import java.util.Optional;
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public void saveRefreshToken(String id, String token, Instant expiryDate) {
+    public void saveRefreshToken(String uuid, String token, Instant expiryDate) {
         RefreshToken refreshToken =
                 RefreshToken.builder()
-                .id(id)
+                .uuid(uuid)
                 .token(token)
                 .expiryDate(expiryDate)
                 .build();

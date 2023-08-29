@@ -42,7 +42,7 @@ public class JwtTokenProvider {
 
     public TokenInfo generateToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String id = userDetails.getUsername();
+        String uuid = userDetails.getUsername();
 
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -52,7 +52,7 @@ public class JwtTokenProvider {
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + accessExpiration);
         String accessToken = Jwts.builder()
-                .setSubject(id)
+                .setSubject(uuid)
                 .claim("tokenType", "access")
                 .claim("auth", authorities)
                 .setExpiration(accessTokenExpiresIn)
@@ -61,14 +61,14 @@ public class JwtTokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setSubject(id)
+                .setSubject(uuid)
                 .claim("tokenType", "refresh")
                 .setExpiration(new Date(now + refreshExpiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
         // Refresh Token DB 저장
-        refreshTokenService.saveRefreshToken(id, refreshToken, new Date(now + refreshExpiration).toInstant());
+        refreshTokenService.saveRefreshToken(uuid, refreshToken, new Date(now + refreshExpiration).toInstant());
 
         return TokenInfo.builder()
                 .grantType("Bearer")
@@ -88,10 +88,10 @@ public class JwtTokenProvider {
         //TODO refresh일때 유저 메일로 권한 정보 가져오기
         if ("refresh".equals(tokenType)) {
             // 클레임에서 이메일 정보 가져오기
-            String id = claims.getSubject();
+            String uuid = claims.getSubject();
 
-            // 이메일을 기반으로 User 테이블 row 찾기
-            Optional<Member> user = memberRepository.findById(id);
+            // uuid 기반으로 User 테이블 row 찾기
+            Optional<Member> user = memberRepository.findByUuid(uuid);
 
             if (user.isPresent()) {
                 SecurityMember securityMember = new SecurityMember(user.get());

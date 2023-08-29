@@ -29,6 +29,10 @@ public class MemberService {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
 
+        if (request.getPassword() == null || request.getPassword().isEmpty()) {
+            throw new RuntimeException("플랫폼 가입을 위해서는 비밀번호가 필요합니다.");
+        }
+
         // 비밀번호를 Spring Security를 이용하여 해싱하여 저장
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
@@ -48,12 +52,13 @@ public class MemberService {
     }
 
     public TokenInfo login(MemberRequest request) {
-        //사용자의 인증을 위해 이 객체를 사용하여 사용자가 제공한 아이디와 비밀번호를 저장
-        //이 토큰은 사용자 인증을 위해 사용되며, 인증 매니저를 통해 실제 인증이 수행
-        //TODO ID 값으로 UUID를 찾아와서 넣어야 한다.
+        //아이디 값으로 사용자 정보를 가져와 uuid로 아이디값을 저장한다.
+        //소셜 로그인일때 id 값을 jwt로 노출시키기에는 보안적인 부분을 우려.
         Optional<Member> user = memberRepository.findById(request.getId());
 
         if (user.isPresent()) {
+            //사용자의 인증을 위해 이 객체를 사용하여 사용자가 제공한 아이디와 비밀번호를 저장
+            //이 토큰은 사용자 인증을 위해 사용되며, 인증 매니저를 통해 실제 인증이 수행
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.get().getUuid(), request.getPassword());
 
             //authenticationManagerBuilder는 스프링 시큐리티 설정에서 정의한 AuthenticationManager를 생성하는 빌더 클래스이고
@@ -64,7 +69,7 @@ public class MemberService {
 
             return jwtTokenProvider.generateToken(authentication);
         } else {
-            throw new RuntimeException("Member not found for ID: " + request.getId());
+            throw new RuntimeException("다음 ID에 해당하는 회원을 찾을 수 없습니다 : " + request.getId());
         }
     }
 }

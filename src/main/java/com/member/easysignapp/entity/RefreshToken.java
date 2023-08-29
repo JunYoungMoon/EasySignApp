@@ -15,7 +15,7 @@ public class RefreshToken {
     private Long idx;
 
     @Column(nullable = false)
-    private String id;
+    private String uuid;
 
     @Column(nullable = false)
     private String token;
@@ -24,9 +24,9 @@ public class RefreshToken {
     private Instant expiryDate;
 
     @Builder
-    public RefreshToken(Long idx, String id, String token, Instant expiryDate) {
+    public RefreshToken(Long idx, String uuid, String token, Instant expiryDate) {
         this.idx = idx;
-        this.id = id;
+        this.uuid = uuid;
         this.token = token;
         this.expiryDate = expiryDate;
     }
