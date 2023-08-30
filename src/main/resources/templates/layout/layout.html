@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Layout</title>
+</head>
+<body>
+<header th:replace="fragments/header :: header"></header>
+
+<div class="content">
+    <!-- Content of the specific page -->
+    <section th:replace="${page}"></section>
+</div>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>
