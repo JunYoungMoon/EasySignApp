@@ -1,16 +1,14 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
     <title>My Layout</title>
 </head>
 <body>
 <header th:replace="fragments/header :: header"></header>
-
-<div class="content">
-    <!-- Content of the specific page -->
-    <section th:replace="${page}"></section>
+<div class="container">
+    <div layout:fragment="content"></div>
 </div>
-
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

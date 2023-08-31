@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>My Index Page</title>
-</head>
-<body>
-<!-- Content of the specific page -->
-<section>
-    <h1>Index Page Content</h1>
-    <p th:text="${message}"></p> <!-- Display the model attribute "message" -->
-</section>
-</body>
+<!-- Default Layout Import-->
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+>
+<div layout:fragment="content">
+    <section>
+        <h1>Index Page Content</h1>
+        <p th:text="${message}"></p>
+    </section>
+</div>
 </html>
