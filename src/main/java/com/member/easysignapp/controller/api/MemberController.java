@@ -1,4 +1,4 @@
-package com.member.easysignapp.controller;
+package com.member.easysignapp.controller.api;
 
 import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.dto.TokenInfo;

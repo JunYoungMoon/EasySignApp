@@ -1,4 +1,4 @@
-package com.member.easysignapp.controller;
+package com.member.easysignapp.controller.api;
 
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;

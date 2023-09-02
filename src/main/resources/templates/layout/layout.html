@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
-<head>
-    <title>My Layout</title>
-</head>
+<head th:replace="fragments/config :: config"></head>
 <body>
 <header th:replace="fragments/header :: header"></header>
 <div class="container">
