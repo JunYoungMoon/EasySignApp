@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class MainController {
 
     @GetMapping("/")
-    public String sendData(Model model, Authentication authentication) {
+    public String sendData(Model model) {
         String message = "Hello, world!!";
         String header = "Header";
         model.addAttribute("message", message); // 모델에 데이터 추가
