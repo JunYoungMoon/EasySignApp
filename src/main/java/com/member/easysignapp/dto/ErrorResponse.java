@@ -3,8 +3,8 @@ package com.member.easysignapp.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
 @Getter
+@Setter
 public class ErrorResponse {
     private int status;
     private String error;

@@ -44,9 +44,4 @@ public class MemberController {
 
         return "Username: " + username;
     }
-
-    @PostMapping("/test")
-    public String test() {
-        return "success";
-    }
 }

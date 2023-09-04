@@ -42,19 +42,18 @@ function ajaxRequest(url, method, data, callback) {
 // 페이지 로딩 시 실행
 window.addEventListener('load', function () {
     ajaxRequest('/getcsrf', 'GET', null, function (response) {
-        let csrfToken = JSON.parse(response);
-        localStorage.setItem('csrfToken', csrfToken.token);
-        console.log('CSRF token stored in localStorage:', csrfToken.token);
+        let tokenInfo = JSON.parse(response);
+        console.log('csrf token stored in Cookies:', tokenInfo.token);
     });
 
     // Step 1: Retrieve AccessToken from cookie
     const accessToken = getCookie('accessToken');
 
-    // Step 2: Retrieve CSRF Token from localStorage
-    const csrfToken = localStorage.getItem('csrfToken');
+    // Step 2: Retrieve CSRF Token from cookie
+    const csrfToken = getCookie('XSRF-TOKEN');
 
     // Step 3: Send a request to the server with AccessToken and CSRF Token
-    ajaxRequest('/test', 'POST', {
+    ajaxRequest('/', 'GET', {
         accessToken: accessToken,
         csrfToken: csrfToken
     }, function (response) {
