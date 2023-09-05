@@ -53,11 +53,13 @@ window.addEventListener('load', function () {
     const csrfToken = getCookie('XSRF-TOKEN');
 
     // Step 3: Send a request to the server with AccessToken and CSRF Token
-    ajaxRequest('/', 'GET', {
+    ajaxRequest('/check-auth', 'POST', {
         accessToken: accessToken,
         csrfToken: csrfToken
     }, function (response) {
         // Handle the server response here
+        let headerElement = document.getElementById("header");
+        headerElement.innerHTML = response;
     });
 });
 

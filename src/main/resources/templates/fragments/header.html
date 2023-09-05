@@ -2,8 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <div th:fragment="header">
-    <div style="border: solid 1px #cece90">
-        <div sec:authorize="isAuthenticated()">
+    <div style="border: solid 1px #cece90" id="header">
+        <div sec:authorize="isAuthenticated()" >
             <div>로그인 상태입니다.</div>
         </div>
         <div sec:authorize="!isAuthenticated()">

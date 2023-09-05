@@ -5,6 +5,7 @@ import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.service.MemberService;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,15 @@ public class MemberController {
     @PostMapping("/login")
     public TokenInfo login(@RequestBody MemberRequest request) {
         return memberService.login(request);
+    }
+
+    @PostMapping("/check-auth")
+    public String checkAuth(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails != null) {
+            return "<div>로그인 상태입니다.</div>";
+        } else {
+            return "<div>로그인하지 않았습니다.</div>";
+        }
     }
 
     @GetMapping("/userinfo")
