@@ -57,6 +57,7 @@ window.addEventListener('load', function () {
         accessToken: accessToken,
         csrfToken: csrfToken
     }, function (response) {
+        debugger;
         // Handle the server response here
         let headerElement = document.getElementById("header");
         headerElement.innerHTML = response;

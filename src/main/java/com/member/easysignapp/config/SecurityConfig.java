@@ -32,7 +32,8 @@ public class SecurityConfig {
             "/signup",
             "/getcsrf",
             "/login/**",
-            "/oauth2/**"
+            "/oauth2/**",
+            "/check-auth"
     };
 
     @Bean

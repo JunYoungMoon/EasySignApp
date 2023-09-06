@@ -66,8 +66,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             } else {
                 //access일 경우에는 refresh 토큰 요청
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403 Forbidden
-                response.getWriter().write("The access token has expired. Please pass the refresh token.");
+                response.setStatus(HttpServletResponse.SC_OK); // 200 OK
+                response.getWriter().write("Refresh token required");
             }
             return; // 필터 체인 중단
         } catch (UnsupportedJwtException | MalformedJwtException e) {
