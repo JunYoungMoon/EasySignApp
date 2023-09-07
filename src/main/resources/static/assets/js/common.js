@@ -16,11 +16,11 @@ function ajaxRequest(url, method, data, callback) {
     xhr.open(method, url, true);
 
     xhr.setRequestHeader('Content-Type', 'application/json');
-    if(data){
-        if(data.accessToken){
-            xhr.setRequestHeader('Authorization', 'Bearer ' + data.accessToken);
+    if (data) {
+        if (data.token) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + data.token);
         }
-        if(data.csrfToken){
+        if (data.csrfToken) {
             xhr.setRequestHeader('X-XSRF-TOKEN', data.csrfToken);
         }
     }
@@ -31,7 +31,23 @@ function ajaxRequest(url, method, data, callback) {
             if (xhr.status === 200) {
                 callback(xhr.responseText);
             } else {
-                console.error('Request failed with status:', xhr.status);
+                switch (xhr.status) {
+                    case 400:
+                        console.error('Bad Request:', xhr.responseText);
+                        // Add your handling code for 400 Bad Request here
+                        break;
+                    case 401:
+                        console.error('Unauthorized:', xhr.responseText);
+                        // Add your handling code for 401 Unauthorized here
+                        break;
+                    case 403:
+                        console.error('Forbidden:', xhr.responseText);
+                        // Add your handling code for 403 Forbidden here
+                        break;
+                    default:
+                        console.error('Request failed with status:', xhr.status);
+                    // Add handling code for other status codes here
+                }
             }
         }
     };
@@ -46,23 +62,47 @@ window.addEventListener('load', function () {
         console.log('csrf token stored in Cookies:', tokenInfo.token);
     });
 
-    // Step 1: Retrieve AccessToken from cookie
-    const accessToken = getCookie('accessToken');
+    checkAuth('accessToken');
+});
 
-    // Step 2: Retrieve CSRF Token from cookie
+function checkAuth(tokenType) {
+    let token;
+    if (tokenType === 'accessToken') {
+        token = getCookie('accessToken');
+    } else if (tokenType === 'refreshToken') {
+        token = getCookie('refreshToken');
+    } else {
+        console.error('Invalid tokenType:', tokenType);
+        return;
+    }
+
     const csrfToken = getCookie('XSRF-TOKEN');
 
-    // Step 3: Send a request to the server with AccessToken and CSRF Token
     ajaxRequest('/check-auth', 'POST', {
-        accessToken: accessToken,
+        token: token,
         csrfToken: csrfToken
     }, function (response) {
-        debugger;
-        // Handle the server response here
+        if (response === 'Refresh token required') {
+            checkAuth('refreshToken');
+            return false;
+        }
+
+        if (tokenType === 'refreshToken') {
+            let token = JSON.parse(response);
+
+            setSessionCookie("accessToken", token.accessToken);
+            setSessionCookie("refreshToken", token.refreshToken);
+        }
+
         let headerElement = document.getElementById("header");
-        headerElement.innerHTML = response;
+        headerElement.innerHTML = '<div>로그인 상태 입니다.</div>';
     });
-});
+}
+
+// Set a session cookie
+function setSessionCookie(name, value) {
+    document.cookie = name + "=" + value + ";path=/";
+}
 
 // Function to retrieve a cookie by name
 function getCookie(name) {

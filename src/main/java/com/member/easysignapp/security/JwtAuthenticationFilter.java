@@ -40,8 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 토큰이 만료된 경우의 예외 처리
             // 만료된 토큰이라도 "tokenType"을 추출하여 처리
             Claims claims = e.getClaims();
-
             String tokenType = claims.get("tokenType", String.class);
+
             if ("refresh".equals(tokenType)) {
                 //refresh 일때는 검증 및 재발행
                 boolean isRefreshTokenValid = jwtTokenProvider.isRefreshTokenValid(token);

@@ -71,7 +71,7 @@ spring:
             user-name-attribute: id
 
 jwt:
-  secret: dfkgjdfgDHNSB75hjdvhanem7213742ASNDGCkSA7JDAKHFAKJSHFJSJHF123FASFBBFHAJDDHjasjfhfh87j4
+  secret: ${JWT_SECRET}
   expiration:
-    access: 8640000
-    refresh: 8640000
+    access: 8640
+    refresh: 8640
