@@ -1,5 +1,6 @@
 package com.member.easysignapp.service;
 
+import com.member.easysignapp.dto.MemberResponse;
 import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.dto.MemberRequest;
@@ -23,7 +24,7 @@ public class MemberService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
-    public Member signUp(MemberRequest request) {
+    public MemberResponse signUp(MemberRequest request) {
         // 이메일 중복 체크
         if (memberRepository.existsById(request.getId())) {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
@@ -48,7 +49,16 @@ public class MemberService {
                 .roles(request.getRoles())
                 .build();
 
-        return memberRepository.save(member);
+        memberRepository.save(member);
+
+        // MemberResponse 객체 생성 및 설정
+        MemberResponse memberResponse = new MemberResponse();
+        memberResponse.setId(member.getId());
+        memberResponse.setEmail(member.getEmail());
+        memberResponse.setName(member.getName());
+        memberResponse.setRoles(member.getRoles());
+
+        return memberResponse;
     }
 
     public TokenInfo login(MemberRequest request) {

@@ -81,21 +81,24 @@ function checkAuth(tokenType) {
     ajaxRequest('/check-auth', 'POST', {
         token: token,
         csrfToken: csrfToken
-    }, function (response) {
-        if (response === 'Refresh token required') {
+    }, function (res) {
+        if (tokenType === 'accessToken' && res === 'Refresh token required') {
             checkAuth('refreshToken');
             return false;
         }
 
+        let headerElement = document.getElementById("header");
+
         if (tokenType === 'refreshToken') {
-            let token = JSON.parse(response);
+            let token = JSON.parse(res);
 
             setSessionCookie("accessToken", token.accessToken);
             setSessionCookie("refreshToken", token.refreshToken);
-        }
 
-        let headerElement = document.getElementById("header");
-        headerElement.innerHTML = '<div>로그인 상태 입니다.</div>';
+            headerElement.innerHTML = '<div>로그인 상태 입니다.</div>';
+        }else{
+            headerElement.innerHTML = res;
+        }
     });
 }
 

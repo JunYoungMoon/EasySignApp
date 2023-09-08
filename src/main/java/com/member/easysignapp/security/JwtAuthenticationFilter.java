@@ -2,10 +2,7 @@ package com.member.easysignapp.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.member.easysignapp.dto.TokenInfo;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +19,14 @@ import javax.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
 
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 1. Request Header 에서 JWT 토큰 추출
@@ -37,65 +42,55 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (ExpiredJwtException e) {
-            // 토큰이 만료된 경우의 예외 처리
-            // 만료된 토큰이라도 "tokenType"을 추출하여 처리
-            Claims claims = e.getClaims();
-            String tokenType = claims.get("tokenType", String.class);
-
-            if ("refresh".equals(tokenType)) {
-                //refresh 일때는 검증 및 재발행
-                boolean isRefreshTokenValid = jwtTokenProvider.isRefreshTokenValid(token);
-
-                if (isRefreshTokenValid) {
-                    // Refresh 토큰으로부터 유저 정보 및 권한 추출
-                    Authentication authentication = jwtTokenProvider.getAuthentication(token);
-
-                    // 새로운 액세스 토큰 발급 및 리턴
-                    TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
-
-                    // 기존 Refresh 토큰 제거
-                    jwtTokenProvider.deleteRefreshToken(token);
-
-                    // 생성한 액세스 토큰을 응답으로 반환
-                    response.setContentType("application/json");
-                    response.getWriter().write(new ObjectMapper().writeValueAsString(newTokenInfo)); // JSON 형식으로 변환하여 응답
-                    response.setStatus(HttpServletResponse.SC_OK); // 200 OK
-                } else {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
-                    response.getWriter().write("Validation failed with the corresponding refresh token.");
-                }
-            } else {
-                //access일 경우에는 refresh 토큰 요청
-                response.setStatus(HttpServletResponse.SC_OK); // 200 OK
-                response.getWriter().write("Refresh token required");
-            }
+            // 토큰이 만료된 경우 refreshToken 체크
+            handleExpiredJwtException(response, token, e);
             return; // 필터 체인 중단
-        } catch (UnsupportedJwtException | MalformedJwtException e) {
-            // 지원하지 않는 JWT 또는 잘못된 형식의 JWT에 대한 예외 처리
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 Bad Request
-            response.getWriter().write("Invalid JWT");
-            return; // 필터 체인 중단
-        } catch (IllegalArgumentException e) {
-            // 잘못된 JWT claim 값에 대한 예외 처리
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 Bad Request
-            response.getWriter().write("Invalid JWT claims");
-            return; // 필터 체인 중단
+        } catch (JwtException | IllegalArgumentException e) {
+            handleHttpResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT");
+            return;
         } catch (SecurityException e) {
-            // 보안 문제에 대한 예외 처리
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403 Forbidden
-            response.getWriter().write("Forbidden");
-            return; // 필터 체인 중단
+            handleHttpResponse(response, HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
 
-    // Request Header 에서 토큰 정보 추출
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
-            return bearerToken.substring(7);
+    private void handleExpiredJwtException(HttpServletResponse response, String token, ExpiredJwtException e) throws IOException {
+        // 만료된 토큰이라도 "tokenType"을 추출하여 처리
+        Claims claims = e.getClaims();
+        String tokenType = claims.get("tokenType", String.class);
+
+        if ("refresh".equals(tokenType)) {
+            //refresh 일때는 검증 및 재발행
+            boolean isRefreshTokenValid = jwtTokenProvider.isRefreshTokenValid(token);
+
+            if (isRefreshTokenValid) {
+                // Refresh 토큰으로부터 유저 정보 및 권한 추출
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+
+                // 새로운 액세스 토큰 발급 및 리턴
+                TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
+
+                // 기존 Refresh 토큰 제거
+                jwtTokenProvider.deleteRefreshToken(token);
+
+                // 생성한 액세스 토큰을 응답으로 반환
+                response.setContentType("application/json");
+                response.getWriter().write(new ObjectMapper().writeValueAsString(newTokenInfo)); // JSON 형식으로 변환하여 응답
+                response.setStatus(HttpServletResponse.SC_OK); // 200 OK
+            } else {
+                // refreshToken이 올바르지 않을때 (401 Unauthorized)
+                handleHttpResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Validation failed with the corresponding refresh token.");
+            }
+        } else {
+            //access일 경우에는 refresh 토큰 요청 (200 OK)
+            handleHttpResponse(response, HttpServletResponse.SC_OK, "Refresh token required");
         }
-        return null;
+    }
+
+    private void handleHttpResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
+        response.setStatus(statusCode);
+        response.getWriter().write(message);
     }
 }

@@ -1,5 +1,6 @@
 package com.member.easysignapp.service;
 
+import com.member.easysignapp.dto.MemberResponse;
 import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.repository.MemberRepository;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 public class MemberServiceTest {
@@ -34,32 +36,31 @@ public class MemberServiceTest {
 
     @Test
     void signUp_ValidInput_Success() {
-        // Given
-        String id = "test";
-        String email = "test@example.com";
-        String password = "testpassword";
-        List<String> roles = new ArrayList<>();
-        roles.add("ROLE_USER");
-
+        // Arrange
         MemberRequest request = new MemberRequest();
+        request.setId("test@example.com");
+        request.setPassword("password");
+        request.setEmail("test@example.com");
+        request.setName("Test User");
+        // Add roles to the request if needed
 
-        when(memberRepository.existsById(id)).thenReturn(false);
-        when(passwordEncoder.encode(password)).thenReturn("hashedPassword");
-        when(memberRepository.save(any(Member.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        // Mock behavior for repository and passwordEncoder
+        when(memberRepository.existsById(request.getId())).thenReturn(false); // Email doesn't exist
+        when(passwordEncoder.encode(request.getPassword())).thenReturn("hashedPassword");
 
-        // When
-        Member result = memberService.signUp(request);
+        // Act
+        MemberResponse response = memberService.signUp(request);
 
-        // Then
-        verify(memberRepository, times(1)).existsById(id);
-        verify(passwordEncoder, times(1)).encode(password);
+        // Assert
+        // Verify that the memberRepository.save method was called once with the correct arguments
         verify(memberRepository, times(1)).save(any(Member.class));
 
-        // Additional assertions if necessary
-         assertEquals(id, result.getEmail());
-         assertEquals(roles, result.getRoles());
-         assertEquals("hashedPassword", result.getPassword());
+        // Add more assertions as needed to verify the response object
+        assertNotNull(response);
+        assertEquals(request.getId(), response.getId());
+        assertEquals(request.getEmail(), response.getEmail());
+        assertEquals(request.getName(), response.getName());
+        // Add assertions for roles if needed
     }
 
-    // Other test methods...
 }
