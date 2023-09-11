@@ -29,11 +29,11 @@ public class MemberController {
     }
 
     @PostMapping("/check-auth")
-    public String checkAuth(@AuthenticationPrincipal UserDetails userDetails) {
+    public boolean checkAuth(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails != null) {
-            return "<div>로그인 상태입니다.</div>";
+            return true;
         } else {
-            return "<div>로그인하지 않았습니다.</div>";
+            return false;
         }
     }
 }

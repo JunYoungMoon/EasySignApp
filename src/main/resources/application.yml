@@ -73,5 +73,5 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration:
-    access: 8640
-    refresh: 8640
+    access: 86400000
+    refresh: 86400000
