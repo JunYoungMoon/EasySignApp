@@ -72,6 +72,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .email(oAuth2UserInfo.getEmail())
                     .name(oAuth2UserInfo.getName())
                     .roles(roles)
+                    .profile_image(oAuth2UserInfo.getProfileImage())
                     .build();
 
             try {

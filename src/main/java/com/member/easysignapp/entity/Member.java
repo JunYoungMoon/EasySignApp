@@ -26,9 +26,10 @@ public class Member {
     @Column(nullable = false)
     private String name;
     private String password;
+    private String profile_image;
 
     @Builder
-    public Member(Long idx, String id, String uuid, String email, String name, String password, List<String> roles) {
+    public Member(Long idx, String id, String uuid, String email, String name, String password, List<String> roles, String profile_image) {
         this.idx = idx;
         this.id = id;
         this.uuid = uuid;
@@ -36,6 +37,7 @@ public class Member {
         this.name = name;
         this.password = password;
         this.roles = roles;
+        this.profile_image = profile_image;
     }
 
     @ElementCollection(fetch = FetchType.EAGER)
