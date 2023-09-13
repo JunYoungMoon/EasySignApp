@@ -59,6 +59,8 @@ public class SecurityConfig {
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+        http.cors();
+
         //요청에 대한 권한 설정
         http
                 .authorizeRequests()

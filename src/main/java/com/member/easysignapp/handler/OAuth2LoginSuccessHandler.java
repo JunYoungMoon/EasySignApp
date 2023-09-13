@@ -42,7 +42,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
 
         // JWT를 GET 파라미터로 전달할 URL 생성
-        UriComponentsBuilder redirectUrlBuilder = UriComponentsBuilder.fromUriString("http://192.168.100.193:3000/loginCallback");
+        UriComponentsBuilder redirectUrlBuilder = UriComponentsBuilder.fromUriString("http://localhost:3000/loginCallback");
         redirectUrlBuilder.queryParam("accessToken", newTokenInfo.getAccessToken());
         redirectUrlBuilder.queryParam("refreshToken", newTokenInfo.getRefreshToken());
         String redirectUrl = redirectUrlBuilder.toUriString();
