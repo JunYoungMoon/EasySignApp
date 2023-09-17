@@ -33,7 +33,8 @@ public class SecurityConfig {
             "/getcsrf",
             "/login/**",
             "/oauth2/**",
-            "/check-auth"
+            "/check-auth",
+            "/user-info"
     };
 
     @Bean
@@ -57,10 +58,9 @@ public class SecurityConfig {
                 .ignoringAntMatchers(patterns)
                 .csrfTokenRepository(csrfTokenRepository())
                 .and()
+                .cors()
+                .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
-        http.cors();
-
         //요청에 대한 권한 설정
         http
                 .authorizeRequests()

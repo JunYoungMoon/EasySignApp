@@ -1,18 +1,23 @@
 package com.member.easysignapp.service;
 
+import com.member.easysignapp.dto.MemberInfo;
 import com.member.easysignapp.dto.MemberResponse;
 import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.security.JwtTokenProvider;
+import com.member.easysignapp.security.SecurityMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,14 +56,12 @@ public class MemberService {
 
         memberRepository.save(member);
 
-        // MemberResponse 객체 생성 및 설정
-        MemberResponse memberResponse = new MemberResponse();
-        memberResponse.setId(member.getId());
-        memberResponse.setEmail(member.getEmail());
-        memberResponse.setName(member.getName());
-        memberResponse.setRoles(member.getRoles());
-
-        return memberResponse;
+        return MemberResponse.builder()
+                .id(member.getId())
+                .email(member.getEmail())
+                .name(member.getName())
+                .roles(member.getRoles())
+                .build();
     }
 
     public TokenInfo login(MemberRequest request) {
@@ -80,6 +83,22 @@ public class MemberService {
             return jwtTokenProvider.generateToken(authentication);
         } else {
             throw new RuntimeException("다음 ID에 해당하는 회원을 찾을 수 없습니다 : " + request.getId());
+        }
+    }
+
+    public MemberInfo userInfo(String uuid){
+        // uuid 기반으로 User 테이블 row 찾기
+        Optional<Member> user = memberRepository.findByUuid(uuid);
+
+        if (user.isPresent()) {
+            Member member = user.get();
+
+            return MemberInfo.builder()
+                    .profileImage(member.getProfile_image())
+                    .email(member.getEmail())
+                    .build();
+        } else {
+            throw new RuntimeException("해당 정보를 가진 사용자가 없습니다.");
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.member.easysignapp.controller.api;
 
+import com.member.easysignapp.dto.MemberInfo;
 import com.member.easysignapp.dto.MemberResponse;
 import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.dto.MemberRequest;
@@ -36,17 +37,14 @@ public class MemberController {
     }
 
     @PostMapping("/user-info")
-    public String getUserInfo() {
+    public MemberInfo getUserInfo() {
         // 현재 사용자의 인증 객체 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 인증 객체에서 사용자 정보 가져오기
         Object principal = authentication.getPrincipal();
-        String username = ((UserDetails) principal).getUsername();
+        String uuid = ((UserDetails) principal).getUsername();
 
-        // 사용자의 권한 정보 가져오기
-        // List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
-
-        return "Username: " + username;
+        return memberService.userInfo(uuid);
     }
 }

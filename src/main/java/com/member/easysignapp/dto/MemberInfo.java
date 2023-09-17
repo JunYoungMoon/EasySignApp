@@ -3,14 +3,9 @@ package com.member.easysignapp.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.List;
-
 @Builder
 @Getter
-public class MemberResponse {
-    private String id;
+public class MemberInfo {
     private String email;
-    private String name;
     private String profileImage;
-    private List<String> roles;
 }
