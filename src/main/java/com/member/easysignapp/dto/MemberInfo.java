@@ -7,5 +7,6 @@ import lombok.Getter;
 @Getter
 public class MemberInfo {
     private String email;
+    private String name;
     private String profileImage;
 }

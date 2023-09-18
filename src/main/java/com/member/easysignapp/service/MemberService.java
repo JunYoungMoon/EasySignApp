@@ -96,6 +96,7 @@ public class MemberService {
             return MemberInfo.builder()
                     .profileImage(member.getProfile_image())
                     .email(member.getEmail())
+                    .name(member.getName())
                     .build();
         } else {
             throw new RuntimeException("해당 정보를 가진 사용자가 없습니다.");

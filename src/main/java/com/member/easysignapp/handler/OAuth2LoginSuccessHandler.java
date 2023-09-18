@@ -1,6 +1,5 @@
 package com.member.easysignapp.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,6 +20,9 @@ import java.io.IOException;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Value("${client.app.url}")
+    private String clientUrl;
 
 //    @Override
 //    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
@@ -42,7 +45,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
 
         // JWT를 GET 파라미터로 전달할 URL 생성
-        UriComponentsBuilder redirectUrlBuilder = UriComponentsBuilder.fromUriString("http://localhost:3000/loginCallback");
+        UriComponentsBuilder redirectUrlBuilder = UriComponentsBuilder.fromUriString(clientUrl + "/loginCallback");
         redirectUrlBuilder.queryParam("accessToken", newTokenInfo.getAccessToken());
         redirectUrlBuilder.queryParam("refreshToken", newTokenInfo.getRefreshToken());
         String redirectUrl = redirectUrlBuilder.toUriString();
