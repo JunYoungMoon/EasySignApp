@@ -80,4 +80,5 @@ jwt:
 
 client:
   app:
-    url: http://easy.sgmchain.net:2127
+#    url: http://easy.sgmchain.net:2127
+    url: http://localhost:3000

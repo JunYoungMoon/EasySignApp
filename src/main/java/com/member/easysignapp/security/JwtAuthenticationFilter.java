@@ -14,6 +14,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -85,7 +87,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } else {
             //access일 경우에는 refresh 토큰 요청 (200 OK)
-            handleHttpResponse(response, HttpServletResponse.SC_OK, "Refresh token required");
+            boolean refreshTokenRequired = true;
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("refreshTokenRequired", refreshTokenRequired);
+
+            response.setContentType("application/json");
+            response.getWriter().write(new ObjectMapper().writeValueAsString(responseData));
+            response.setStatus(HttpServletResponse.SC_OK);
         }
     }
 
