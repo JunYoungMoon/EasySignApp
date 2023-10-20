@@ -1,6 +1,6 @@
 package com.member.easysignapp.controller.api;
 
-import com.member.easysignapp.common.ApiResponse;
+import com.member.easysignapp.dto.ApiResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

@@ -1,6 +1,5 @@
 package com.member.easysignapp.service;
 
-import com.member.easysignapp.common.ApiResponse;
 import com.member.easysignapp.dto.MemberInfo;
 import com.member.easysignapp.dto.MemberResponse;
 import com.member.easysignapp.entity.Member;
@@ -8,17 +7,13 @@ import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.security.JwtTokenProvider;
-import com.member.easysignapp.security.SecurityMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
