@@ -29,12 +29,13 @@ public class SecurityConfig {
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
     String[] patterns = new String[] {
             "/",
-            "/signup",
-            "/getcsrf",
+            "/api/signup",
+            "/api/getcsrf",
             "/login/**",
             "/oauth2/**",
-            "/check-auth",
-            "/user-info"
+            "/api/check-auth",
+            "/api/user-info",
+            "/api/test",
     };
 
     @Bean

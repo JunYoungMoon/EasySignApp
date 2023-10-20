@@ -1,19 +1,23 @@
 package com.member.easysignapp.controller.api;
 
+import com.member.easysignapp.common.ApiResponse;
 import com.member.easysignapp.dto.MemberInfo;
 import com.member.easysignapp.dto.MemberResponse;
 import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.dto.MemberRequest;
+import com.member.easysignapp.entity.SocialMember;
 import com.member.easysignapp.service.MemberService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
+@RequestMapping("/api")
 public class MemberController {
     private final MemberService memberService;
 
@@ -34,6 +38,18 @@ public class MemberController {
     @PostMapping("/check-auth")
     public boolean checkAuth(@AuthenticationPrincipal UserDetails userDetails) {
         return userDetails != null;
+    }
+
+    @PostMapping("/test")
+    public ApiResponse test() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("auth", true);
+
+        return ApiResponse.builder()
+                .status("success")
+                .msg("Success message")
+                .data(data)
+                .build();
     }
 
     @PostMapping("/user-info")
