@@ -1,7 +1,6 @@
 package com.member.easysignapp.controller.api;
 
 import com.member.easysignapp.common.ApiResponse;
-import com.member.easysignapp.dto.MemberInfo;
 import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.service.MemberService;
 import org.springframework.security.core.Authentication;
@@ -9,11 +8,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,32 +18,28 @@ import java.util.Map;
 @RequestMapping("/api")
 public class MemberController {
     private final MemberService memberService;
-    private final CsrfTokenRepository csrfTokenRepository;
-    public MemberController(MemberService memberService, CsrfTokenRepository csrfTokenRepository) {
+
+    public MemberController(MemberService memberService) {
         this.memberService = memberService;
-        this.csrfTokenRepository = csrfTokenRepository;
     }
 
     @PostMapping("/signup")
-    public ApiResponse signUp(HttpServletRequest servletRequest, HttpServletResponse servletResponse, @RequestBody MemberRequest request) {
-        CsrfToken csrfToken = csrfTokenRepository.generateToken(servletRequest);
-        csrfTokenRepository.saveToken(csrfToken, servletRequest, servletResponse);
-
+    public ApiResponse signUp(HttpServletRequest servletRequest, @RequestBody MemberRequest memberRequest) {
         return ApiResponse.builder()
                 .status("success")
-                .csrfToken(csrfToken.getToken())
+                .csrfToken((String) servletRequest.getAttribute("myCsrfToken"))
                 .msg("Success message")
-                .data(memberService.signUp(request))
+                .data(memberService.signUp(memberRequest))
                 .build();
     }
 
     @PostMapping("/login")
-    public ApiResponse login(@RequestBody MemberRequest request, CsrfToken csrfToken) {
+    public ApiResponse login(HttpServletRequest servletRequest, @RequestBody MemberRequest memberRequest) {
         return ApiResponse.builder()
                 .status("success")
-                .csrfToken(csrfToken.getToken())
+                .csrfToken((String) servletRequest.getAttribute("myCsrfToken"))
                 .msg("Success message")
-                .data(memberService.login(request))
+                .data(memberService.login(memberRequest))
                 .build();
     }
 
@@ -56,20 +49,20 @@ public class MemberController {
     }
 
     @PostMapping("/test")
-    public ApiResponse test(CsrfToken csrfToken) {
+    public ApiResponse test(HttpServletRequest servletRequest) {
         Map<String, Object> data = new HashMap<>();
         data.put("auth", true);
 
         return ApiResponse.builder()
                 .status("success")
-                .csrfToken(csrfToken.getToken())
+                .csrfToken((String) servletRequest.getAttribute("myCsrfToken"))
                 .msg("Success message")
                 .data(data)
                 .build();
     }
 
     @PostMapping("/user-info")
-    public MemberInfo getUserInfo() {
+    public ApiResponse getUserInfo(HttpServletRequest servletRequest) {
         // 현재 사용자의 인증 객체 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -77,6 +70,11 @@ public class MemberController {
         Object principal = authentication.getPrincipal();
         String uuid = ((UserDetails) principal).getUsername();
 
-        return memberService.userInfo(uuid);
+        return ApiResponse.builder()
+                .status("success")
+                .csrfToken((String) servletRequest.getAttribute("myCsrfToken"))
+                .msg("Success message")
+                .data(memberService.userInfo(uuid))
+                .build();
     }
 }
