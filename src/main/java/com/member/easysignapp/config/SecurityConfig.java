@@ -27,7 +27,21 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
-    String[] patterns = new String[] {
+
+    //TODO csrf 허용 패턴 추가 필요
+    String[] csrfPatterns = new String[] {
+            "/",
+            "/api/signup",
+            "/api/getcsrf",
+            "/login/**",
+            "/oauth2/**",
+            "/api/check-auth",
+            "/api/user-info",
+            "/api/test",
+    };
+
+    //요청 권한 패턴
+    String[] authPatterns = new String[] {
             "/",
             "/api/signup",
             "/api/getcsrf",
@@ -56,7 +70,7 @@ public class SecurityConfig {
                         headers.contentSecurityPolicy("script-src 'self'"))
                 .csrf()
                 .requireCsrfProtectionMatcher(request -> !WebUtil.isMobile(request))
-                .ignoringAntMatchers(patterns)
+                .ignoringAntMatchers(csrfPatterns)
                 .csrfTokenRepository(csrfTokenRepository())
                 .and()
                 .cors()
@@ -65,7 +79,7 @@ public class SecurityConfig {
         //요청에 대한 권한 설정
         http
                 .authorizeRequests()
-                .antMatchers(patterns).permitAll()
+                .antMatchers(authPatterns).permitAll()
                 .anyRequest().authenticated(); // 그 외의 URL은 인증된 사용자만 접근 가능
 
         //OAuth 2.0 로그인 설정 시작

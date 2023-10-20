@@ -1,5 +1,6 @@
 package com.member.easysignapp.service;
 
+import com.member.easysignapp.common.ApiResponse;
 import com.member.easysignapp.dto.MemberInfo;
 import com.member.easysignapp.dto.MemberResponse;
 import com.member.easysignapp.entity.Member;

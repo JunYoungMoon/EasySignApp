@@ -2,17 +2,18 @@ package com.member.easysignapp.controller.api;
 
 import com.member.easysignapp.common.ApiResponse;
 import com.member.easysignapp.dto.MemberInfo;
-import com.member.easysignapp.dto.MemberResponse;
-import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.dto.MemberRequest;
-import com.member.easysignapp.entity.SocialMember;
 import com.member.easysignapp.service.MemberService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,19 +21,33 @@ import java.util.Map;
 @RequestMapping("/api")
 public class MemberController {
     private final MemberService memberService;
-
-    public MemberController(MemberService memberService) {
+    private final CsrfTokenRepository csrfTokenRepository;
+    public MemberController(MemberService memberService, CsrfTokenRepository csrfTokenRepository) {
         this.memberService = memberService;
+        this.csrfTokenRepository = csrfTokenRepository;
     }
 
     @PostMapping("/signup")
-    public MemberResponse signUp(@RequestBody MemberRequest request) {
-        return memberService.signUp(request);
+    public ApiResponse signUp(HttpServletRequest servletRequest, HttpServletResponse servletResponse, @RequestBody MemberRequest request) {
+        CsrfToken csrfToken = csrfTokenRepository.generateToken(servletRequest);
+        csrfTokenRepository.saveToken(csrfToken, servletRequest, servletResponse);
+
+        return ApiResponse.builder()
+                .status("success")
+                .csrfToken(csrfToken.getToken())
+                .msg("Success message")
+                .data(memberService.signUp(request))
+                .build();
     }
 
     @PostMapping("/login")
-    public TokenInfo login(@RequestBody MemberRequest request) {
-        return memberService.login(request);
+    public ApiResponse login(@RequestBody MemberRequest request, CsrfToken csrfToken) {
+        return ApiResponse.builder()
+                .status("success")
+                .csrfToken(csrfToken.getToken())
+                .msg("Success message")
+                .data(memberService.login(request))
+                .build();
     }
 
     @PostMapping("/check-auth")
@@ -41,12 +56,13 @@ public class MemberController {
     }
 
     @PostMapping("/test")
-    public ApiResponse test() {
+    public ApiResponse test(CsrfToken csrfToken) {
         Map<String, Object> data = new HashMap<>();
         data.put("auth", true);
 
         return ApiResponse.builder()
                 .status("success")
+                .csrfToken(csrfToken.getToken())
                 .msg("Success message")
                 .data(data)
                 .build();
