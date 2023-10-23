@@ -13,19 +13,25 @@ spring:
     suffix: .html
 
   datasource:
-    url: jdbc:h2:tcp://localhost/~/test
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql:${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:h2:tcp://localhost/~/test
+#    driverClassName: org.h2.Driver
+#    username: sa
+#    password:
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+#    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.MySQL5Dialect
     properties:
       hibernate:
         format_sql: true
         show_sql: true
     hibernate:
-      ddl-auto: create
+#      ddl-auto: create
+      ddl-auto: update
 
   security:
     oauth2:
@@ -80,5 +86,5 @@ jwt:
 
 client:
   app:
-#    url: http://easy.sgmchain.net:2127
-    url: http://localhost:3000
+    url: https://easy.sgmchain.net
+#    url: http://localhost:3000

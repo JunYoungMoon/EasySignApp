@@ -14,10 +14,10 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String uuid;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String token;
 
     @Column(nullable = false)

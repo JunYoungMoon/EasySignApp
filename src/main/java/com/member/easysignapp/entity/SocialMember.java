@@ -12,7 +12,7 @@ public class SocialMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String id;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
