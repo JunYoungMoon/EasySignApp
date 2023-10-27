@@ -17,7 +17,7 @@ public class RefreshToken {
     @Column(nullable = false, length = 50)
     private String uuid;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 200)
     private String token;
 
     @Column(nullable = false)

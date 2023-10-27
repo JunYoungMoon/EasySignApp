@@ -13,24 +13,18 @@ spring:
     suffix: .html
 
   datasource:
-    url: jdbc:mysql:${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://39.116.170.25:13306/easy
+    username: easy
+    password: easy!@34
     driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:h2:tcp://localhost/~/test
-#    driverClassName: org.h2.Driver
-#    username: sa
-#    password:
 
   jpa:
-#    database-platform: org.hibernate.dialect.H2Dialect
     database-platform: org.hibernate.dialect.MySQL5Dialect
     properties:
       hibernate:
         format_sql: true
         show_sql: true
     hibernate:
-#      ddl-auto: create
       ddl-auto: update
 
   security:
@@ -38,17 +32,17 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: http://easy-api.sgmchain.net:2128/login/oauth2/code/google
+            client-id: 1078837955974-7dqkjsd1u059agn1a6e2uh3cnm0nm98i.apps.googleusercontent.com
+            client-secret: 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
+            redirect-uri: https://easy-api.sgmchain.net/login/oauth2/code/google
             authorization-grant-type: authorization_code
             scope:
               - email
               - profile
           naver:
-            client-id: ${NAVER_CLIENT_ID}
-            client-secret: ${NAVER_CLIENT_SECRET}
-            redirect-uri: http://easy-api.sgmchain.net:2128/login/oauth2/code/naver
+            client-id: EBqQxvvPsZodYPZZsHI4
+            client-secret: msomB4NsKO
+            redirect-uri: https://easy-api.sgmchain.net/login/oauth2/code/naver
             authorization-grant-type: authorization_code
             scope:
               - name
@@ -56,9 +50,9 @@ spring:
               - profile_image
             client-name: Naver
           kakao:
-            client-id: ${KAKAO_CLIENT_ID}
-            client-secret: ${KAKAO_CLIENT_SECRET}
-            redirect-uri: http://easy-api.sgmchain.net:2128/login/oauth2/code/kakao
+            client-id: b71f73392298c32482e6458aab4e6a26
+            client-secret: 2Unay3rfVpStAWeKixsrK1lUIQg1VBpb
+            redirect-uri: https://easy-api.sgmchain.net/login/oauth2/code/kakao
             authorization-grant-type: authorization_code
             scope:
               - profile_nickname
@@ -79,12 +73,12 @@ spring:
             user-name-attribute: id
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: dfkgjdfgDHNSB75hjdvhanem7213742ASNDGCkSA7JDAKHFAKJSHFJSJHF123FASFBBFHAJDDHjasjfhfh87j4
   expiration:
     access: 86400000
     refresh: 86400000
 
 client:
   app:
-#    url: https://easy.sgmchain.net
-    url: http://localhost:3000
+    url: https://easy.sgmchain.net
+#    url: http://localhost:3000
