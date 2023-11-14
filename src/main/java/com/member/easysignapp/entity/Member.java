@@ -25,11 +25,15 @@ public class Member {
     private String email;
     @Column(nullable = false, length = 20)
     private String name;
+    @Column(length = 100)
     private String password;
+    @Column(length = 100)
     private String profile_image;
+    @Column(length = 20)
+    private String nickname;
 
     @Builder
-    public Member(Long idx, String id, String uuid, String email, String name, String password, List<String> roles, String profile_image) {
+    public Member(Long idx, String id, String uuid, String email, String name, String password, List<String> roles, String profile_image, String nickname) {
         this.idx = idx;
         this.id = id;
         this.uuid = uuid;
@@ -38,6 +42,7 @@ public class Member {
         this.password = password;
         this.roles = roles;
         this.profile_image = profile_image;
+        this.nickname = nickname;
     }
 
     @ElementCollection(fetch = FetchType.EAGER)

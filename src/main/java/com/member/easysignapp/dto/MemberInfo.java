@@ -9,4 +9,5 @@ public class MemberInfo {
     private String email;
     private String name;
     private String profileImage;
+    private String nickName;
 }
