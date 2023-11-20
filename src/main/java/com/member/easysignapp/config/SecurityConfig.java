@@ -20,7 +20,6 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -36,9 +35,10 @@ public class SecurityConfig {
             "/api/getcsrf",
             "/login/**",
             "/oauth2/**",
-            "/api/check-auth",
-            "/api/user-info",
-            "/api/test",
+//            "/api/check-auth",
+//            "/api/user-info",
+//            "/api/set-user-info",
+//            "/api/test",
     };
 
     //요청 권한 패턴
@@ -49,8 +49,9 @@ public class SecurityConfig {
             "/login/**",
             "/oauth2/**",
             "/api/check-auth",
-            "/api/user-info",
-            "/api/test",
+//            "/api/user-info",
+//            "/api/set-user-info",
+//            "/api/test",
     };
 
     @Bean
@@ -77,12 +78,14 @@ public class SecurityConfig {
                 .cors()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        //jwt filter 설정
+        http
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         //요청에 대한 권한 설정
         http
                 .authorizeRequests()
                 .antMatchers(authPatterns).permitAll()
                 .anyRequest().authenticated(); // 그 외의 URL은 인증된 사용자만 접근 가능
-
         //OAuth 2.0 로그인 설정 시작
         http
                 .oauth2Login()
@@ -90,14 +93,13 @@ public class SecurityConfig {
                 .failureHandler(oAuth2LoginFailureHandler)
                 .userInfoEndpoint()
                 .userService(customOAuth2UserService);
-
-        //jwt filter 설정
-        http
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         //csrf filter 검증 이후 새로운 토큰 발급 필터 설정
         //csrf는 XSRF-TOKEN의 쿠키값과 전달받은 파라미터 _csrf 혹은 헤더 X-XSRF-TOKEN 값과 비교한다.
+
         http
                 .addFilterAfter(new CsrfTokenRenewalFilter(csrfTokenRepository()), CsrfFilter.class);
+
+
 
         return http.build();
     }

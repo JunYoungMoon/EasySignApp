@@ -2,6 +2,7 @@ package com.member.easysignapp.controller.api;
 
 import com.member.easysignapp.dto.ApiResponse;
 import com.member.easysignapp.dto.MemberRequest;
+import com.member.easysignapp.dto.UserInfoRequest;
 import com.member.easysignapp.service.MemberService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -76,4 +77,28 @@ public class MemberController {
                 .data(memberService.userInfo(uuid))
                 .build();
     }
+
+    @PostMapping("/set-user-info")
+    public ApiResponse setUserInfo(@RequestBody UserInfoRequest userInfoRequest) {
+        try {
+            // Retrieve the current authenticated user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Object principal = authentication.getPrincipal();
+            String uuid = ((UserDetails) principal).getUsername();
+
+            // Update user information using your service
+//            memberService.setUserInfo(uuid, userInfoRequest);
+
+            return ApiResponse.builder()
+                    .status("success")
+                    .msg("User information updated successfully")
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .status("error")
+                    .msg("Failed to update user information")
+                    .build();
+        }
+    }
+
 }
