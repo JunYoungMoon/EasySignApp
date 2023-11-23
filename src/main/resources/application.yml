@@ -40,7 +40,7 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: http://easy-api.sgmchain.net:2128/login/oauth2/code/google
+            redirect-uri: https://easy-api.sgmchain.net/login/oauth2/code/google
             authorization-grant-type: authorization_code
             scope:
               - email
@@ -48,7 +48,7 @@ spring:
           naver:
             client-id: ${NAVER_CLIENT_ID}
             client-secret: ${NAVER_CLIENT_SECRET}
-            redirect-uri: http://easy-api.sgmchain.net:2128/login/oauth2/code/naver
+            redirect-uri: https://easy-api.sgmchain.net/login/oauth2/code/naver
             authorization-grant-type: authorization_code
             scope:
               - name
@@ -58,7 +58,7 @@ spring:
           kakao:
             client-id: ${KAKAO_CLIENT_ID}
             client-secret: ${KAKAO_CLIENT_SECRET}
-            redirect-uri: http://easy-api.sgmchain.net:2128/login/oauth2/code/kakao
+            redirect-uri: https://easy-api.sgmchain.net/login/oauth2/code/kakao
             authorization-grant-type: authorization_code
             scope:
               - profile_nickname
@@ -81,10 +81,9 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration:
-    access: 86400000
-    refresh: 86400000
+    access: 8640000
+    refresh: 8640000
 
 client:
   app:
-#    url: https://easy.sgmchain.net
-    url: http://localhost:3000
+    url: https://easy.sgmchain.net

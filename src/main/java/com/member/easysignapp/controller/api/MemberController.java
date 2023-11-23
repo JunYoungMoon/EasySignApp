@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +28,7 @@ public class MemberController {
     public ApiResponse signUp(HttpServletRequest servletRequest, @RequestBody MemberRequest memberRequest) {
         return ApiResponse.builder()
                 .status("success")
-                .csrfToken((String) servletRequest.getAttribute("myCsrfToken"))
+                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
                 .msg("Success message")
                 .data(memberService.signUp(memberRequest))
                 .build();
@@ -37,15 +38,20 @@ public class MemberController {
     public ApiResponse login(HttpServletRequest servletRequest, @RequestBody MemberRequest memberRequest) {
         return ApiResponse.builder()
                 .status("success")
-                .csrfToken((String) servletRequest.getAttribute("myCsrfToken"))
+                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
                 .msg("Success message")
                 .data(memberService.login(memberRequest))
                 .build();
     }
 
     @PostMapping("/check-auth")
-    public boolean checkAuth(@AuthenticationPrincipal UserDetails userDetails) {
-        return userDetails != null;
+    public ApiResponse checkAuth(HttpServletRequest servletRequest, @AuthenticationPrincipal UserDetails userDetails) {
+        return ApiResponse.builder()
+                .status("success")
+                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
+                .msg("Success message")
+                .data(userDetails != null)
+                .build();
     }
 
     @PostMapping("/test")
@@ -55,7 +61,7 @@ public class MemberController {
 
         return ApiResponse.builder()
                 .status("success")
-                .csrfToken((String) servletRequest.getAttribute("myCsrfToken"))
+                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
                 .msg("Success message")
                 .data(data)
                 .build();
@@ -72,7 +78,7 @@ public class MemberController {
 
         return ApiResponse.builder()
                 .status("success")
-                .csrfToken((String) servletRequest.getAttribute("myCsrfToken"))
+                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
                 .msg("Success message")
                 .data(memberService.userInfo(uuid))
                 .build();

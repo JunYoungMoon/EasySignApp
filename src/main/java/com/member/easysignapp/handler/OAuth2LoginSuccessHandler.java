@@ -48,6 +48,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         UriComponentsBuilder redirectUrlBuilder = UriComponentsBuilder.fromUriString(clientUrl + "/loginCallback");
         redirectUrlBuilder.queryParam("accessToken", newTokenInfo.getAccessToken());
         redirectUrlBuilder.queryParam("refreshToken", newTokenInfo.getRefreshToken());
+        redirectUrlBuilder.queryParam("csrfToken", request.getAttribute("myCsrfToken"));
         String redirectUrl = redirectUrlBuilder.toUriString();
 
         // 클라이언트로 리다이렉트

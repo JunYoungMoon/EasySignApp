@@ -1,6 +1,7 @@
 package com.member.easysignapp.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.member.easysignapp.dto.ApiResponse;
 import com.member.easysignapp.dto.TokenInfo;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
@@ -45,20 +46,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (ExpiredJwtException e) {
             // 토큰이 만료된 경우 refreshToken 체크
-            handleExpiredJwtException(response, token, e);
+            handleExpiredJwtException(request, response, token, e);
             return; // 필터 체인 중단
         } catch (JwtException | IllegalArgumentException e) {
-            handleHttpResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT");
+            handleHttpResponse(request, response, "Invalid JWT" , "");
             return;
         } catch (SecurityException e) {
-            handleHttpResponse(response, HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+            handleHttpResponse(request, response,"Forbidden" , "");
             return;
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void handleExpiredJwtException(HttpServletResponse response, String token, ExpiredJwtException e) throws IOException {
+    private void handleExpiredJwtException(HttpServletRequest request, HttpServletResponse response, String token, ExpiredJwtException e) throws IOException {
         // 만료된 토큰이라도 "tokenType"을 추출하여 처리
         Claims claims = e.getClaims();
         String tokenType = claims.get("tokenType", String.class);
@@ -77,28 +78,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 기존 Refresh 토큰 제거
                 jwtTokenProvider.deleteRefreshToken(token);
 
-                // 생성한 액세스 토큰을 응답으로 반환
-                response.setContentType("application/json");
-                response.getWriter().write(new ObjectMapper().writeValueAsString(newTokenInfo)); // JSON 형식으로 변환하여 응답
-                response.setStatus(HttpServletResponse.SC_OK); // 200 OK
+                // Access Refresh 토큰 생성후 전달
+                handleHttpResponse(request, response, "A new token has been created.", new ObjectMapper().writeValueAsString(newTokenInfo));
             } else {
-                // refreshToken이 올바르지 않을때 (401 Unauthorized)
-                handleHttpResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Validation failed with the corresponding refresh token.");
+                // refresh 토큰 정보가 올바르지 않을때
+                handleHttpResponse(request, response, "Validation failed with the corresponding refresh token." ,"");
             }
         } else {
-            //access일 경우에는 refresh 토큰 요청 (200 OK)
+            //access 토큰이 만료되었을때 refresh 토큰 요청
             boolean refreshTokenRequired = true;
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("refreshTokenRequired", refreshTokenRequired);
 
-            response.setContentType("application/json");
-            response.getWriter().write(new ObjectMapper().writeValueAsString(responseData));
-            response.setStatus(HttpServletResponse.SC_OK);
+            handleHttpResponse(request, response, "A new token has been created.", new ObjectMapper().writeValueAsString(responseData));
         }
     }
 
-    private void handleHttpResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        response.setStatus(statusCode);
-        response.getWriter().write(message);
+    private void handleHttpResponse(HttpServletRequest request, HttpServletResponse response, String message, String data) throws IOException {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .status("success")
+                .csrfToken((String) request.getAttribute("myCsrfToken"))
+                .msg(message)
+                .data(data)
+                .build();
+
+//        response.setStatus(statusCode);
+        response.setContentType("application/json");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
     }
 }
