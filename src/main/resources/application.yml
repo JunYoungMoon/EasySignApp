@@ -12,6 +12,15 @@ spring:
     prefix: classpath:templates/
     suffix: .html
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB # 단일 파일 최대 크기
+      max-request-size: 25MB # 요청 전체 크기 제한
+      # 해당 파일은 메모리에 저장됩니다. 그러나 파일이 이 크기를 초과하면 임시 파일이 디스크에 저장됩니다.
+      # 이렇게 하면 작은 파일의 경우 디스크에 저장하지 않고 메모리에서 처리함으로써 더 빠른 처리 속도를 얻을 수 있습니다.
+      file-size-threshold: 2KB # 임시 파일을 생성하기 전에 메모리에 저장되는 파일의 크기 제한
+
   datasource:
     url: jdbc:mysql:${DB_URL}
     username: ${DB_USERNAME}

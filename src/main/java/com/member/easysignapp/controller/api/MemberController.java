@@ -2,7 +2,6 @@ package com.member.easysignapp.controller.api;
 
 import com.member.easysignapp.dto.ApiResponse;
 import com.member.easysignapp.dto.MemberRequest;
-import com.member.easysignapp.dto.UserInfoRequest;
 import com.member.easysignapp.service.MemberService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -10,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -85,15 +85,17 @@ public class MemberController {
     }
 
     @PostMapping("/set-user-info")
-    public ApiResponse setUserInfo(@RequestBody UserInfoRequest userInfoRequest) {
+    public ApiResponse setUserInfo(
+            @RequestPart("profileImage") MultipartFile profileImage,
+            @RequestPart("nickname") String nickname,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
         try {
             // Retrieve the current authenticated user
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            Object principal = authentication.getPrincipal();
-            String uuid = ((UserDetails) principal).getUsername();
+            String uuid = userDetails.getUsername();
 
             // Update user information using your service
-//            memberService.setUserInfo(uuid, userInfoRequest);
+            // memberService.setUserInfo(uuid, userInfoRequest);
 
             return ApiResponse.builder()
                     .status("success")
@@ -106,5 +108,6 @@ public class MemberController {
                     .build();
         }
     }
+
 
 }
