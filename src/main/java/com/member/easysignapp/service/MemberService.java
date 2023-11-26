@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -84,10 +85,10 @@ public class MemberService {
 
     public MemberInfo userInfo(String uuid){
         // uuid 기반으로 User 테이블 row 찾기
-        Optional<Member> user = memberRepository.findByUuid(uuid);
+        Optional<Member> optionalMember = memberRepository.findByUuid(uuid);
 
-        if (user.isPresent()) {
-            Member member = user.get();
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
 
             return MemberInfo.builder()
                     .profileImage(member.getProfile_image())
@@ -95,6 +96,28 @@ public class MemberService {
                     .name(member.getName())
                     .nickName(member.getNickname())
                     .build();
+        } else {
+            throw new RuntimeException("해당 정보를 가진 사용자가 없습니다.");
+        }
+    }
+
+    @Transactional
+    public void updateMemberInfo(String uuid, String newNickname, String newProfileImagePath) {
+        // uuid 기반으로 Member 테이블 row 찾기
+        Optional<Member> optionalMember = memberRepository.findByUuid(uuid);
+
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+
+            if (newNickname != null) {
+                member.setNickname(newNickname);
+            }
+
+            if (newProfileImagePath != null) {
+                member.setProfile_image(newProfileImagePath);
+            }
+
+            memberRepository.save(member);
         } else {
             throw new RuntimeException("해당 정보를 가진 사용자가 없습니다.");
         }

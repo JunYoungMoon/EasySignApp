@@ -3,6 +3,7 @@ package com.member.easysignapp.controller.api;
 import com.member.easysignapp.dto.ApiResponse;
 import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.service.MemberService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,12 +13,21 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @RestController
 @RequestMapping("/api")
 public class MemberController {
+    @Value("${upload.profile.directory}")
+    private String uploadPath;
+
     private final MemberService memberService;
 
     public MemberController(MemberService memberService) {
@@ -86,28 +96,35 @@ public class MemberController {
 
     @PostMapping("/set-user-info")
     public ApiResponse setUserInfo(
-            @RequestPart("profileImage") MultipartFile profileImage,
-            @RequestPart("nickname") String nickname,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
+            @RequestPart(value = "nickname", required = false) String nickname,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String uuid = userDetails.getUsername();
+
         try {
-            // Retrieve the current authenticated user
-            String uuid = userDetails.getUsername();
+            // 파일 업로드 처리
+            String uploadedImagePath = null;
+            if (profileImage != null && !profileImage.isEmpty()) {
+                // 파일 이름을 유니크하게 만들어서 저장
+                String fileName = uuid + "_" + profileImage.getOriginalFilename();
+                Path filePath = Paths.get(uploadPath, fileName);
 
-            // Update user information using your service
-            // memberService.setUserInfo(uuid, userInfoRequest);
+                // 파일 복사
+                Files.copy(profileImage.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                uploadedImagePath = uploadPath + "/" + fileName;
+            }
 
-            return ApiResponse.builder()
-                    .status("success")
-                    .msg("User information updated successfully")
-                    .build();
-        } catch (Exception e) {
-            return ApiResponse.builder()
-                    .status("error")
-                    .msg("Failed to update user information")
-                    .build();
+            //닉네임, 프로필이미지 업데이트
+            memberService.updateMemberInfo(uuid, nickname, uploadedImagePath);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
+        return ApiResponse.builder()
+                .status("success")
+                .msg("User information updated successfully")
+                .build();
+
     }
-
-
 }
