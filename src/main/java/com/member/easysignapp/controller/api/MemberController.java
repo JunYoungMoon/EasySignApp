@@ -27,6 +27,8 @@ import java.nio.file.StandardCopyOption;
 public class MemberController {
     @Value("${upload.profile.directory}")
     private String uploadPath;
+    @Value("${server.app.url}")
+    private String serverUrl;
 
     private final MemberService memberService;
 
@@ -107,14 +109,17 @@ public class MemberController {
             if (profileImage != null && !profileImage.isEmpty()) {
                 // 파일 이름을 유니크하게 만들어서 저장
                 String fileName = uuid + "_" + profileImage.getOriginalFilename();
-                Path filePath = Paths.get(uploadPath, fileName);
+                Path filePath = Paths.get("src/main/resources/static/" + uploadPath, fileName);
 
-                // 파일 복사
-                Files.copy(profileImage.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                uploadedImagePath = uploadPath + "/" + fileName;
+                // try-with-resources를 사용하여 InputStream 자동으로 닫기
+                try (InputStream inputStream = profileImage.getInputStream()) {
+                    // 파일 복사
+                    Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+                    uploadedImagePath = serverUrl + uploadPath + "/" + fileName;
+                }
             }
 
-            //닉네임, 프로필이미지 업데이트
+            // 닉네임, 프로필이미지 업데이트
             memberService.updateMemberInfo(uuid, nickname, uploadedImagePath);
 
         } catch (IOException e) {

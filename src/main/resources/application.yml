@@ -97,6 +97,10 @@ client:
   app:
     url: https://easy.sgmchain.net
 
+server:
+  app:
+    url: https://easy-api.sgmchain.net
+
 upload:
   profile:
-    directory: ./uploads/profile
+    directory: /uploads/profile
