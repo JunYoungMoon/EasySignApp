@@ -103,4 +103,4 @@ server:
 
 upload:
   profile:
-    directory: /uploads/profile
+    directory: /easy/upload/profile

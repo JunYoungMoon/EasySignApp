@@ -22,6 +22,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import static com.member.easysignapp.util.FileUtil.sanitizeFileName;
+
 @RestController
 @RequestMapping("/api")
 public class MemberController {
@@ -98,24 +100,39 @@ public class MemberController {
 
     @PostMapping("/set-user-info")
     public ApiResponse setUserInfo(
+            HttpServletRequest servletRequest,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
             @RequestPart(value = "nickname", required = false) String nickname,
             @AuthenticationPrincipal UserDetails userDetails) {
         String uuid = userDetails.getUsername();
+        String uploadedImagePath = null;
 
         try {
             // 파일 업로드 처리
-            String uploadedImagePath = null;
             if (profileImage != null && !profileImage.isEmpty()) {
                 // 파일 이름을 유니크하게 만들어서 저장
-                String fileName = uuid + "_" + profileImage.getOriginalFilename();
-                Path filePath = Paths.get("src/main/resources/static/" + uploadPath, fileName);
+                String originalFileName = profileImage.getOriginalFilename();
 
-                // try-with-resources를 사용하여 InputStream 자동으로 닫기
-                try (InputStream inputStream = profileImage.getInputStream()) {
-                    // 파일 복사
-                    Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-                    uploadedImagePath = serverUrl + uploadPath + "/" + fileName;
+                // 파일 이름이 null이 아닌 경우에만 정리 및 저장을 수행
+                if (originalFileName != null && !originalFileName.isEmpty()) {
+                    String sanitizedFileName = sanitizeFileName(originalFileName);
+                    String fileName = uuid + "_" + sanitizedFileName;
+
+                    Path uploadFolderPath = Paths.get(uploadPath);
+
+                    // 폴더가 없는 경우 생성
+                    if (!Files.exists(uploadFolderPath)) {
+                        Files.createDirectories(uploadFolderPath);
+                    }
+
+                    Path filePath = Paths.get(uploadPath, fileName);
+
+                    // try-with-resources를 사용하여 InputStream 자동으로 닫기
+                    try (InputStream inputStream = profileImage.getInputStream()) {
+                        // 파일 복사
+                        Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+                        uploadedImagePath = serverUrl + uploadPath + "/" + fileName;
+                    }
                 }
             }
 
@@ -126,10 +143,13 @@ public class MemberController {
             throw new RuntimeException(e);
         }
 
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("uploadedImagePath", uploadedImagePath);
+
         return ApiResponse.builder()
                 .status("success")
-                .msg("User information updated successfully")
+                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
+                .data(responseData)
                 .build();
-
     }
 }

@@ -1,5 +1,6 @@
 package com.member.easysignapp.controller.api;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -11,18 +12,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URLConnection;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/profile")
 public class ProfileController {
+    @Value("${upload.profile.directory}")
+    private String uploadPath;
 
     @GetMapping("/{fileName:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String fileName) {
         // 외부 디렉터리 경로 설정
-        Path filePath = Paths.get("/path/to/external/directory").resolve(fileName).normalize();
+        Path filePath = Paths.get(uploadPath).resolve(fileName).normalize();
 
         // 파일 읽기 및 Resource 객체 생성
         Resource resource;
@@ -49,7 +54,8 @@ public class ProfileController {
     }
 
     private String determineMimeType(Resource resource) throws IOException {
-        // ContentResolver를 사용하여 MIME 타입 결정
-        return java.nio.file.Files.probeContentType(resource.getFile().toPath());
+        try (InputStream inputStream = resource.getInputStream()) {
+            return URLConnection.guessContentTypeFromStream(inputStream);
+        }
     }
 }

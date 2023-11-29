@@ -33,7 +33,7 @@ public class SecurityConfig {
             "/api/getcsrf",
             "/login/**",
             "/oauth2/**",
-            "/uploads/profile/**",
+            "/profile/**",
 //            "/api/check-auth",
 //            "/api/user-info",
 //            "/api/set-user-info",
@@ -48,7 +48,7 @@ public class SecurityConfig {
             "/login/**",
             "/oauth2/**",
             "/api/check-auth",
-            "/uploads/profile/**",
+            "/profile/**",
 //            "/api/user-info",
 //            "/api/set-user-info",
 //            "/api/test",
@@ -59,10 +59,10 @@ public class SecurityConfig {
         return CookieCsrfTokenRepository.withHttpOnlyFalse();
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().antMatchers("/assets/**", "/favicon.ico");
-    }
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        return (web) -> web.ignoring().antMatchers("/assets/**", "/favicon.ico");
+//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
