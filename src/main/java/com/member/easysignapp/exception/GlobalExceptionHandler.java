@@ -2,6 +2,7 @@ package com.member.easysignapp.exception;
 
 import com.member.easysignapp.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -14,7 +15,7 @@ public class GlobalExceptionHandler {
 
         ApiResponse response = ApiResponse.builder()
                 .status("fail")
-                .csrfToken((String) servletRequest.getAttribute("myCsrfToken"))
+                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
                 .msg(ex.getMessage())
                 .build();
 

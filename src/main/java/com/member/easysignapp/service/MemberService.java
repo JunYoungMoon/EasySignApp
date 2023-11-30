@@ -28,7 +28,7 @@ public class MemberService {
 
     public MemberResponse signUp(MemberRequest request) {
         // 이메일 중복 체크
-        if (memberRepository.existsById(request.getId())) {
+        if (memberRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
 
@@ -64,7 +64,7 @@ public class MemberService {
     public TokenInfo login(MemberRequest request) {
         //아이디 값으로 사용자 정보를 가져와 uuid로 아이디값을 저장한다.
         //소셜 로그인일때 id 값을 jwt로 노출시키기에는 보안적인 부분을 우려.
-        Optional<Member> user = memberRepository.findById(request.getId());
+        Optional<Member> user = memberRepository.findByEmail(request.getEmail());
 
         if (user.isPresent()) {
             //사용자의 인증을 위해 이 객체를 사용하여 사용자가 제공한 아이디와 비밀번호를 저장
@@ -79,7 +79,7 @@ public class MemberService {
 
             return jwtTokenProvider.generateToken(authentication);
         } else {
-            throw new RuntimeException("다음 ID에 해당하는 회원을 찾을 수 없습니다 : " + request.getId());
+            throw new RuntimeException(request.getEmail() + "에 해당하는 회원을 찾을 수 없습니다");
         }
     }
 

@@ -44,6 +44,7 @@ public class SecurityConfig {
     String[] authPatterns = new String[] {
             "/",
             "/api/signup",
+            "/api/login",
             "/api/getcsrf",
             "/login/**",
             "/oauth2/**",
