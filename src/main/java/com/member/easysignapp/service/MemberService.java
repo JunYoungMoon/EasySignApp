@@ -79,7 +79,7 @@ public class MemberService {
 
             return jwtTokenProvider.generateToken(authentication);
         } else {
-            throw new RuntimeException(request.getEmail() + "에 해당하는 회원을 찾을 수 없습니다");
+            throw new RuntimeException(request.getEmail() + " 회원을 찾을 수 없습니다");
         }
     }
 

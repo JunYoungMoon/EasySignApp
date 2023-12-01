@@ -106,6 +106,7 @@ public class MemberController {
             @AuthenticationPrincipal UserDetails userDetails) {
         String uuid = userDetails.getUsername();
         String uploadedImagePath = null;
+        String uploadedImageName = null;
 
         try {
             // 파일 업로드 처리
@@ -116,7 +117,7 @@ public class MemberController {
                 // 파일 이름이 null이 아닌 경우에만 정리 및 저장을 수행
                 if (originalFileName != null && !originalFileName.isEmpty()) {
                     String sanitizedFileName = sanitizeFileName(originalFileName);
-                    String fileName = uuid + "_" + sanitizedFileName;
+                    uploadedImageName = uuid + "_" + sanitizedFileName;
 
                     Path uploadFolderPath = Paths.get(uploadPath);
 
@@ -125,13 +126,13 @@ public class MemberController {
                         Files.createDirectories(uploadFolderPath);
                     }
 
-                    Path filePath = Paths.get(uploadPath, fileName);
+                    Path filePath = Paths.get(uploadPath, uploadedImageName);
 
                     // try-with-resources를 사용하여 InputStream 자동으로 닫기
                     try (InputStream inputStream = profileImage.getInputStream()) {
                         // 파일 복사
                         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-                        uploadedImagePath = serverUrl + uploadPath + "/" + fileName;
+                        uploadedImagePath = serverUrl + uploadPath + "/" + uploadedImageName;
                     }
                 }
             }
@@ -144,7 +145,7 @@ public class MemberController {
         }
 
         Map<String, Object> responseData = new HashMap<>();
-        responseData.put("uploadedImagePath", uploadedImagePath);
+        responseData.put("uploadedImageName", uploadedImageName);
 
         return ApiResponse.builder()
                 .status("success")
