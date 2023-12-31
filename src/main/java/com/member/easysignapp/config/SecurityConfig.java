@@ -40,7 +40,7 @@ public class SecurityConfig {
 //            "/api/test",
     };
 
-    //요청 권한 패턴
+    //요청 권한 허용 패턴
     String[] authPatterns = new String[] {
             "/",
             "/api/signup",
