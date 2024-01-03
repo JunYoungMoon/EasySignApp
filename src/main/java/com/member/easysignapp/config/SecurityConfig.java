@@ -1,12 +1,15 @@
 package com.member.easysignapp.config;
 
+import com.member.easysignapp.exception.CustomAuthenticationEntryPoint;
 import com.member.easysignapp.handler.OAuth2LoginFailureHandler;
 import com.member.easysignapp.handler.OAuth2LoginSuccessHandler;
+import com.member.easysignapp.security.CsrfTokenRenewalFilter;
 import com.member.easysignapp.security.JwtAuthenticationFilter;
 import com.member.easysignapp.security.JwtTokenProvider;
 import com.member.easysignapp.service.CustomOAuth2UserService;
 import com.member.easysignapp.util.WebUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 @Configuration
@@ -55,9 +59,17 @@ public class SecurityConfig {
 //            "/api/test",
     };
 
+    @Value("${client.app.url}")
+    private String clientUrl;
+
     @Bean
     public CsrfTokenRepository csrfTokenRepository() {
         return CookieCsrfTokenRepository.withHttpOnlyFalse();
+    }
+
+    @Bean
+    public CustomAuthenticationEntryPoint customAuthenticationEntryPoint() {
+        return new CustomAuthenticationEntryPoint(clientUrl + "/auth/good");
     }
 
 //    @Bean
@@ -87,6 +99,10 @@ public class SecurityConfig {
                 .authorizeRequests()
                 .antMatchers(authPatterns).permitAll()
                 .anyRequest().authenticated(); // 그 외의 URL은 인증된 사용자만 접근 가능
+        //인증 실패시 예외 처리 재정의
+        http
+                .exceptionHandling()
+                .authenticationEntryPoint(customAuthenticationEntryPoint());
         //OAuth 2.0 로그인 설정 시작
         http
                 .oauth2Login()
@@ -94,6 +110,11 @@ public class SecurityConfig {
                 .failureHandler(oAuth2LoginFailureHandler)
                 .userInfoEndpoint()
                 .userService(customOAuth2UserService);
+
+        //csrf filter 검증 이후 새로운 토큰 발급 필터 설정
+        //csrf는 XSRF-TOKEN의 쿠키값과 전달받은 파라미터 _csrf 혹은 헤더 X-XSRF-TOKEN 값과 비교한다.
+//        http
+//                .addFilterAfter(new CsrfTokenRenewalFilter(csrfTokenRepository()), CsrfFilter.class);
 
         return http.build();
     }
