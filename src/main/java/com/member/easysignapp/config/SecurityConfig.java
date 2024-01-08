@@ -3,7 +3,6 @@ package com.member.easysignapp.config;
 import com.member.easysignapp.exception.CustomAuthenticationEntryPoint;
 import com.member.easysignapp.handler.OAuth2LoginFailureHandler;
 import com.member.easysignapp.handler.OAuth2LoginSuccessHandler;
-import com.member.easysignapp.security.CsrfTokenRenewalFilter;
 import com.member.easysignapp.security.JwtAuthenticationFilter;
 import com.member.easysignapp.security.JwtTokenProvider;
 import com.member.easysignapp.service.CustomOAuth2UserService;
@@ -14,12 +13,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 @Configuration
@@ -59,9 +56,6 @@ public class SecurityConfig {
 //            "/api/test",
     };
 
-    @Value("${client.app.url}")
-    private String clientUrl;
-
     @Bean
     public CsrfTokenRepository csrfTokenRepository() {
         return CookieCsrfTokenRepository.withHttpOnlyFalse();
@@ -69,13 +63,8 @@ public class SecurityConfig {
 
     @Bean
     public CustomAuthenticationEntryPoint customAuthenticationEntryPoint() {
-        return new CustomAuthenticationEntryPoint(clientUrl + "/auth/good");
+        return new CustomAuthenticationEntryPoint();
     }
-
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomizer() {
-//        return (web) -> web.ignoring().antMatchers("/assets/**", "/favicon.ico");
-//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
