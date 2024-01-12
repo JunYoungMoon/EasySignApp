@@ -25,6 +25,6 @@ public class NaverOAuth2User extends OAuth2UserInfo {
 
     @Override
     public String getProfileImage() {
-        return (String) attributes.get("profile_image");
+        return (String) attributes.get("profileImage");
     }
 }

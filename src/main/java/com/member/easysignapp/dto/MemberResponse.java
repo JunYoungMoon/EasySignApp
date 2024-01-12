@@ -8,9 +8,6 @@ import java.util.List;
 @Builder
 @Getter
 public class MemberResponse {
-    private String id;
     private String email;
     private String name;
-    private String profileImage;
-    private List<String> roles;
 }

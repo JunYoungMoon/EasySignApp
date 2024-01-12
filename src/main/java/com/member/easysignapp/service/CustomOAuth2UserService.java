@@ -41,24 +41,20 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         AuthProvider authProvider = AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId().toUpperCase());
         OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(authProvider, oAuth2User.getAttributes());
 
-        String Id = authProvider + "_" + oAuth2UserInfo.getOAuth2Id();
+        Optional<SocialMember> optionalUser = socialMemberRepository.findByProviderId(oAuth2UserInfo.getOAuth2Id());
 
-        Optional<SocialMember> optionalUser = socialMemberRepository.findById(Id);
         SocialMember socialMember;
         Member member;
 
         if (optionalUser.isEmpty()) {
             socialMember = SocialMember.builder()
-                    .id(Id)
                     .provider(authProvider)
                     .providerId(oAuth2UserInfo.getOAuth2Id())
                     .build();
 
-            try {
-                socialMemberRepository.save(socialMember);
-            } catch (DataAccessException e) {
-                throw new RuntimeException("Failed to save member social: " + e.getMessage(), e);
-            }
+            socialMember = socialMemberRepository.save(socialMember);
+
+            Long socialMemberId = socialMember.getIdx();
 
             List<String> roles = new ArrayList<>();
             roles.add("user");
@@ -67,25 +63,23 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             UUID randomUUID = UUID.randomUUID();
 
             member = Member.builder()
-                    .id(Id)
+                    .socialIdx(socialMemberId)
                     .uuid(randomUUID.toString())
                     .email(oAuth2UserInfo.getEmail())
                     .name(oAuth2UserInfo.getName())
                     .roles(roles)
-                    .profile_image(oAuth2UserInfo.getProfileImage())
+                    .profileImage(oAuth2UserInfo.getProfileImage())
                     .build();
 
-            try {
-                memberRepository.save(member);
-            } catch (DataAccessException e) {
-                throw new RuntimeException("Failed to save member: " + e.getMessage(), e);
-            }
+            memberRepository.save(member);
         } else {
-            Optional<Member> foundMember = memberRepository.findById(Id);
+            socialMember = optionalUser.get();
+
+            Optional<Member> foundMember = memberRepository.findBySocialIdx(socialMember.getIdx());
             if (foundMember.isPresent()) {
                 member = foundMember.get();
             } else {
-                throw new RuntimeException("Member not found for ID: " + Id);
+                throw new RuntimeException("Member not found");
             }
         }
 

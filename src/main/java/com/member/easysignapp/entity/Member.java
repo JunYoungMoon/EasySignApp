@@ -3,6 +3,8 @@ package com.member.easysignapp.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +20,8 @@ public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
-    @Column(nullable = false, length = 30)
-    private String id;
+    @Column(length = 30)
+    private Long socialIdx;
     @Column(nullable = false, length = 50)
     private String uuid;
     @Column(nullable = false, length = 50)
@@ -29,23 +31,30 @@ public class Member {
     @Column(length = 100)
     private String password;
     @Column(length = 100)
-    private String profile_image;
+    private String profileImage;
     @Column(length = 20)
     private String nickname;
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private LocalDateTime registeredAt;
 
     @Builder
-    public Member(Long idx, String id, String uuid, String email, String name, String password, List<String> roles, String profile_image, String nickname) {
+    public Member(Long idx, Long socialIdx, String uuid, String email, String name, String password, List<String> roles, String profileImage, String nickname) {
         this.idx = idx;
-        this.id = id;
+        this.socialIdx = socialIdx;
         this.uuid = uuid;
         this.email = email;
         this.name = name;
         this.password = password;
         this.roles = roles;
-        this.profile_image = profile_image;
+        this.profileImage = profileImage;
         this.nickname = nickname;
     }
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        this.registeredAt = LocalDateTime.now(ZoneOffset.UTC);
+    }
 }

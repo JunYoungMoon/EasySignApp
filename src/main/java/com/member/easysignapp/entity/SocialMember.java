@@ -12,8 +12,6 @@ public class SocialMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
-    @Column(nullable = false, length = 50)
-    private String id;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private AuthProvider provider;
@@ -21,9 +19,8 @@ public class SocialMember {
     private String providerId;
 
     @Builder
-    public SocialMember(Long idx, String id, AuthProvider provider, String providerId) {
+    public SocialMember(Long idx, AuthProvider provider, String providerId) {
         this.idx = idx;
-        this.id = id;
         this.provider = provider;
         this.providerId = providerId;
     }

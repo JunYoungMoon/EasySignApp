@@ -38,14 +38,13 @@ public class MemberServiceTest {
     void signUp_ValidInput_Success() {
         // Arrange
         MemberRequest request = new MemberRequest();
-        request.setId("test@example.com");
         request.setPassword("password");
         request.setEmail("test@example.com");
         request.setName("Test User");
         // Add roles to the request if needed
 
         // Mock behavior for repository and passwordEncoder
-        when(memberRepository.existsById(request.getId())).thenReturn(false); // Email doesn't exist
+        when(memberRepository.existsByEmail(request.getEmail())).thenReturn(false); // Email doesn't exist
         when(passwordEncoder.encode(request.getPassword())).thenReturn("hashedPassword");
 
         // Act
@@ -57,7 +56,7 @@ public class MemberServiceTest {
 
         // Add more assertions as needed to verify the response object
         assertNotNull(response);
-        assertEquals(request.getId(), response.getId());
+        assertEquals(request.getId(), response.getEmail());
         assertEquals(request.getEmail(), response.getEmail());
         assertEquals(request.getName(), response.getName());
         // Add assertions for roles if needed

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,25 +41,29 @@ public class MemberService {
         // 비밀번호를 Spring Security를 이용하여 해싱하여 저장
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
-        //jwt토큰에 보여질 UUID 생성
+        // jwt토큰에 보여질 UUID 생성
         UUID randomUUID = UUID.randomUUID();
 
+        List<String> roles = request.getRoles();
+
+        // role이 null이거나 비어 있는지 확인하고 필요한 경우 기본 role을 할당
+        if (roles == null || roles.isEmpty()) {
+            roles = Collections.singletonList("user");
+        }
+
         Member member = Member.builder()
-                .id(request.getId())
+                .email(request.getEmail())
                 .uuid(randomUUID.toString())
                 .password(hashedPassword)
-                .email(request.getEmail())
                 .name(request.getName())
-                .roles(request.getRoles())
+                .roles(roles)
                 .build();
 
         memberRepository.save(member);
 
         return MemberResponse.builder()
-                .id(member.getId())
                 .email(member.getEmail())
                 .name(member.getName())
-                .roles(member.getRoles())
                 .build();
     }
 
@@ -91,7 +97,7 @@ public class MemberService {
             Member member = optionalMember.get();
 
             return MemberInfo.builder()
-                    .profileImage(member.getProfile_image())
+                    .profileImage(member.getProfileImage())
                     .email(member.getEmail())
                     .name(member.getName())
                     .nickName(member.getNickname())
@@ -114,7 +120,7 @@ public class MemberService {
             }
 
             if (newProfileImagePath != null) {
-                member.setProfile_image(newProfileImagePath);
+                member.setProfileImage(newProfileImagePath);
             }
 
             memberRepository.save(member);

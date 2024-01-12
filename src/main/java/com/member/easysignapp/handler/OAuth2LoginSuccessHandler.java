@@ -45,7 +45,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
 
         // JWT를 GET 파라미터로 전달할 URL 생성
-        UriComponentsBuilder redirectUrlBuilder = UriComponentsBuilder.fromUriString(clientUrl + "/loginCallback");
+        UriComponentsBuilder redirectUrlBuilder = UriComponentsBuilder.fromUriString(clientUrl + "/auth/callback");
         redirectUrlBuilder.queryParam("accessToken", newTokenInfo.getAccessToken());
         redirectUrlBuilder.queryParam("refreshToken", newTokenInfo.getRefreshToken());
         redirectUrlBuilder.queryParam("csrfToken", request.getAttribute("myCsrfToken"));

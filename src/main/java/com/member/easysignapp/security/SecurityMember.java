@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class SecurityMember implements UserDetails, OAuth2User {
     private Member member;
     private Long idx;
-    private String id;
+    private Long socialIdx;
     private String uuid;
     private String email;
     private String password;
@@ -30,7 +30,7 @@ public class SecurityMember implements UserDetails, OAuth2User {
 
     public SecurityMember(Member member) {
         this.idx = member.getIdx();
-        this.id = member.getId();
+        this.socialIdx = member.getSocialIdx();
         this.uuid = member.getUuid();
         this.email = member.getEmail();
         this.password = member.getPassword();
@@ -39,7 +39,7 @@ public class SecurityMember implements UserDetails, OAuth2User {
 
     public SecurityMember(Member member, Map<String, Object> attributes ) {
         this.idx = member.getIdx();
-        this.id = member.getId();
+        this.socialIdx = member.getSocialIdx();
         this.uuid = member.getUuid();
         this.email = member.getEmail();
         this.password = member.getPassword();
