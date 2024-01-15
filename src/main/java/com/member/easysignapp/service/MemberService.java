@@ -8,6 +8,7 @@ import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.util.*;
 
 @Service
@@ -27,6 +29,13 @@ public class MemberService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
+    private final RedisService redisService;
+
+    private static final String AUTH_CODE_PREFIX = "AuthCode ";
+
+    @Value("${spring.mail.auth-code-expiration-millis}")
+    private long authCodeExpirationMillis;
+
 
     public MemberResponse signUp(MemberRequest request) {
         // 이메일 중복 체크
@@ -145,9 +154,12 @@ public class MemberService {
     }
 
     public void sendCodeToEmail(String toEmail) {
-        String title = "Travel with me 이메일 인증 번호";
+        String title = "Easy Sign App 이메일 인증 번호";
         String authCode = this.createCode();
         mailService.sendEmail(toEmail, title, authCode);
+
+        redisService.setValues(AUTH_CODE_PREFIX + toEmail,
+                authCode, Duration.ofMillis(this.authCodeExpirationMillis));
     }
 }
 

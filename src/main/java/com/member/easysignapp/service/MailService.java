@@ -15,6 +15,7 @@ public class MailService {
 
     private final JavaMailSender emailSender;
 
+
     public void sendEmail(String toEmail,
                           String title,
                           String text) {
@@ -22,9 +23,7 @@ public class MailService {
         try {
             emailSender.send(emailForm);
         } catch (RuntimeException e) {
-            log.debug("MailService.sendEmail exception occur toEmail: {}, " +
-                    "title: {}, text: {}", toEmail, title, text);
-            throw new RuntimeException(e);
+            throw new RuntimeException("메일 전송 실패");
         }
     }
 
@@ -38,4 +37,6 @@ public class MailService {
 
         return message;
     }
+
+
 }
