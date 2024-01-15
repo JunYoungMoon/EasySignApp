@@ -82,6 +82,17 @@ public class MemberController {
                 .build();
     }
 
+    @PostMapping("/emails/verification-requests")
+    public ApiResponse sendMessage(HttpServletRequest servletRequest, @RequestParam("email") @Valid String email) {
+        memberService.sendCodeToEmail(email);
+
+        return ApiResponse.builder()
+                .status("success")
+                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
+                .msg("Success message")
+                .build();
+    }
+
     @PostMapping("/user-info")
     public ApiResponse getUserInfo(HttpServletRequest servletRequest) {
         // 현재 사용자의 인증 객체 가져오기

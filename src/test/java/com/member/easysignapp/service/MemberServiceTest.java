@@ -56,7 +56,6 @@ public class MemberServiceTest {
 
         // Add more assertions as needed to verify the response object
         assertNotNull(response);
-        assertEquals(request.getId(), response.getEmail());
         assertEquals(request.getEmail(), response.getEmail());
         assertEquals(request.getName(), response.getName());
         // Add assertions for roles if needed

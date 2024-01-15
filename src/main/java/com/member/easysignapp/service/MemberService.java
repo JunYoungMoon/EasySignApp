@@ -15,10 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +26,7 @@ public class MemberService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
 
     public MemberResponse signUp(MemberRequest request) {
         // 이메일 중복 체크
@@ -127,6 +127,27 @@ public class MemberService {
         } else {
             throw new RuntimeException("해당 정보를 가진 사용자가 없습니다.");
         }
+    }
+
+    private String createCode() {
+        int length = 6;
+
+        try {
+            Random random = SecureRandom.getInstanceStrong();
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < length; i++) {
+                builder.append(random.nextInt(10));
+            }
+            return builder.toString();
+        } catch (RuntimeException | NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendCodeToEmail(String toEmail) {
+        String title = "Travel with me 이메일 인증 번호";
+        String authCode = this.createCode();
+        mailService.sendEmail(toEmail, title, authCode);
     }
 }
 

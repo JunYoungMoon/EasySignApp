@@ -34,7 +34,7 @@ public class Member {
     private String profileImage;
     @Column(length = 20)
     private String nickname;
-    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @Column
     private LocalDateTime registeredAt;
 
     @Builder
