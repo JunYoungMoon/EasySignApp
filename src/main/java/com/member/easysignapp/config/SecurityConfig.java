@@ -30,31 +30,23 @@ public class SecurityConfig {
 
     //TODO csrf 허용 패턴 추가 필요
     String[] csrfPatterns = new String[] {
-            "/",
             "/api/getcsrf",
             "/login/**",
             "/oauth2/**",
             "/profile/**",
-//            "/api/check-auth",
-//            "/api/user-info",
-//            "/api/set-user-info",
-//            "/api/test",
     };
 
     //요청 권한 허용 패턴
     String[] authPatterns = new String[] {
-            "/",
             "/api/signup",
-            "/api/emails/**",
+            "/api/send-email-code",
+            "/api/email-verification",
             "/api/login",
             "/api/getcsrf",
             "/login/**",
             "/oauth2/**",
             "/api/check-auth",
             "/profile/**",
-//            "/api/user-info",
-//            "/api/set-user-info",
-//            "/api/test",
     };
 
     @Bean

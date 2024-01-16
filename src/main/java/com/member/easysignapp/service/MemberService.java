@@ -1,10 +1,7 @@
 package com.member.easysignapp.service;
 
-import com.member.easysignapp.dto.MemberInfo;
-import com.member.easysignapp.dto.MemberResponse;
+import com.member.easysignapp.dto.*;
 import com.member.easysignapp.entity.Member;
-import com.member.easysignapp.dto.TokenInfo;
-import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.repository.MemberRepository;
 import com.member.easysignapp.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -140,12 +137,14 @@ public class MemberService {
 
     private String createCode() {
         int length = 6;
+        String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
         try {
             Random random = SecureRandom.getInstanceStrong();
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < length; i++) {
-                builder.append(random.nextInt(10));
+                int index = random.nextInt(characters.length());
+                builder.append(characters.charAt(index));
             }
             return builder.toString();
         } catch (RuntimeException | NoSuchAlgorithmException e) {
@@ -153,13 +152,34 @@ public class MemberService {
         }
     }
 
-    public void sendCodeToEmail(String toEmail) {
+    public void sendCodeToEmail(EmailRequest emailRequest) {
+        checkDuplicatedEmail(emailRequest.getEmail());
         String title = "Easy Sign App 이메일 인증 번호";
         String authCode = this.createCode();
-        mailService.sendEmail(toEmail, title, authCode);
+        mailService.sendEmail(emailRequest.getEmail(), title, authCode);
 
-        redisService.setValues(AUTH_CODE_PREFIX + toEmail,
+        redisService.setValues(AUTH_CODE_PREFIX + emailRequest.getEmail(),
                 authCode, Duration.ofMillis(this.authCodeExpirationMillis));
+    }
+
+    private void checkDuplicatedEmail(String email) {
+        Optional<Member> existingMember = memberRepository.findByEmail(email);
+        if (existingMember.isPresent()) {
+            throw new RuntimeException("이미 등록된 이메일 주소입니다: " + email);
+        }
+    }
+
+    public void verifiedCode(EmailVerificationRequest emailVerificationRequest) {
+        checkDuplicatedEmail(emailVerificationRequest.getEmail());
+        String storedAuthCode = redisService.getValues(AUTH_CODE_PREFIX + emailVerificationRequest.getEmail());
+
+        if (!redisService.checkExistsValue(storedAuthCode)) {
+            throw new RuntimeException("메일 인증 시간이 만료 되었습니다.");
+        }
+
+        if (!storedAuthCode.equals(emailVerificationRequest.getAuthCode())) {
+            throw new RuntimeException("올바른 인증 코드가 아닙니다.");
+        }
     }
 }
 

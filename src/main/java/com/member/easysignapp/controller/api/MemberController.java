@@ -1,7 +1,6 @@
 package com.member.easysignapp.controller.api;
 
-import com.member.easysignapp.dto.ApiResponse;
-import com.member.easysignapp.dto.MemberRequest;
+import com.member.easysignapp.dto.*;
 import com.member.easysignapp.service.MemberService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -69,27 +68,25 @@ public class MemberController {
                 .build();
     }
 
-    @PostMapping("/test")
-    public ApiResponse test(HttpServletRequest servletRequest) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("auth", true);
+    @PostMapping("/send-email-code")
+    public ApiResponse sendMail(HttpServletRequest servletRequest, @RequestBody @Valid EmailRequest emailRequest) {
+        memberService.sendCodeToEmail(emailRequest);
 
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg("Success message")
-                .data(data)
+                .msg("인증 코드 전송 완료 메일을 확인해 주세요.")
                 .build();
     }
 
-    @PostMapping("/emails/verification-requests")
-    public ApiResponse sendMessage(HttpServletRequest servletRequest, @RequestParam("email") @Valid String email) {
-        memberService.sendCodeToEmail(email);
+    @PostMapping("/email-verification")
+    public ApiResponse verificationEmail(HttpServletRequest servletRequest, @RequestBody @Valid EmailVerificationRequest emailVerificationRequest) {
+        memberService.verifiedCode(emailVerificationRequest);
 
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg("Success message")
+                .msg("이메일 인증에 성공 하였습니다.")
                 .build();
     }
 
@@ -163,6 +160,19 @@ public class MemberController {
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
                 .data(responseData)
+                .build();
+    }
+
+    @PostMapping("/test")
+    public ApiResponse test(HttpServletRequest servletRequest) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("auth", true);
+
+        return ApiResponse.builder()
+                .status("success")
+                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
+                .msg("Success message")
+                .data(data)
                 .build();
     }
 }
