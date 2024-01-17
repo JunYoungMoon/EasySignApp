@@ -1,5 +1,6 @@
 package com.member.easysignapp.config;
 
+import io.lettuce.core.RedisClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -35,5 +36,10 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory());
 
         return redisTemplate;
+    }
+
+    @Bean
+    public RedisClient redisClient() {
+        return RedisClient.create("redis://" + redisHost + ":" + redisPort);
     }
 }

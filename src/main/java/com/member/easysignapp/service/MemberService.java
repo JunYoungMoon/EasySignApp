@@ -1,5 +1,6 @@
 package com.member.easysignapp.service;
 
+import com.member.easysignapp.annotation.RateLimit;
 import com.member.easysignapp.dto.*;
 import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.repository.MemberRepository;
@@ -152,11 +153,12 @@ public class MemberService {
         }
     }
 
+    @RateLimit(key = "sendEmailPoint", limit = 3, period = 300000)
     public void sendCodeToEmail(EmailRequest emailRequest) {
         checkDuplicatedEmail(emailRequest.getEmail());
         String title = "Easy Sign App 이메일 인증 번호";
         String authCode = this.createCode();
-        mailService.sendEmail(emailRequest.getEmail(), title, authCode);
+//        mailService.sendEmail(emailRequest.getEmail(), title, authCode);
 
         redisService.setValues(AUTH_CODE_PREFIX + emailRequest.getEmail(),
                 authCode, Duration.ofMillis(this.authCodeExpirationMillis));
