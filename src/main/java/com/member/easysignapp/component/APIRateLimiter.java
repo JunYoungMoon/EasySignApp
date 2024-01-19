@@ -26,6 +26,7 @@ public class APIRateLimiter {
 
     public APIRateLimiter(RedisClient redisClient) {
         StatefulRedisConnection<String, byte[]> connection = redisClient.connect(RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE));
+        // redis
         this.proxyManager = LettuceBasedProxyManager.builderFor(connection)
                 .withExpirationStrategy(ExpirationAfterWriteStrategy.basedOnTimeForRefillingBucketUpToMax(Duration.ofSeconds(10)))
                 .build();

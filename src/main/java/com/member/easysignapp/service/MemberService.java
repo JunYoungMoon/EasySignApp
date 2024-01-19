@@ -30,6 +30,7 @@ public class MemberService {
     private final RedisService redisService;
 
     private static final String AUTH_CODE_PREFIX = "AuthCode ";
+    private static final String EMAIL_VERIFICATION_PREFIX = "EmailVerification ";
 
     @Value("${spring.mail.auth-code-expiration-millis}")
     private long authCodeExpirationMillis;
@@ -153,7 +154,7 @@ public class MemberService {
         }
     }
 
-    @RateLimit(key = "sendEmailPoint", limit = 3, period = 300000)
+    @RateLimit(key = "sendEmailPoint", limit = 1, period = 300000)
     public void sendCodeToEmail(EmailRequest emailRequest) {
         checkDuplicatedEmail(emailRequest.getEmail());
         String title = "Easy Sign App 이메일 인증 번호";
@@ -182,6 +183,10 @@ public class MemberService {
         if (!storedAuthCode.equals(emailVerificationRequest.getAuthCode())) {
             throw new RuntimeException("올바른 인증 코드가 아닙니다.");
         }
+
+        //실제 가입을 할때 체크할 데이터 유효 기간은 하루
+        redisService.setValues(EMAIL_VERIFICATION_PREFIX + emailVerificationRequest.getEmail(),
+                "success", Duration.ofDays(1));
     }
 }
 

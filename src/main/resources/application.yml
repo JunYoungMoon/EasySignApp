@@ -22,7 +22,7 @@ spring:
       file-size-threshold: 2KB # 임시 파일을 생성하기 전에 메모리에 저장되는 파일의 크기 제한
 
   datasource:
-    url: jdbc:mysql:${DB_URL}
+    url: jdbc:mysql:${MASTER_DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver

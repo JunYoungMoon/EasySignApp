@@ -7,3 +7,18 @@
 <!-- TOC -->
 
 ![img.png](img.png)
+
+
+# master db (master-my.cnf)
+[mysqld]
+server-id=1
+log-bin=mysql-bin
+gtid-mode=ON
+enforce-gtid-consistency=true
+
+# slave db (slave-my.cnf)
+[mysqld]
+server-id=2
+log-bin=mysql-bin
+gtid-mode=ON
+enforce-gtid-consistency=true

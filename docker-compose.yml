@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  mysql-master:
+    image: mysql:latest
+    command: --server-id=1 --log-bin=mysql-bin --gtid-mode=ON --enforce-gtid-consistency=true
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+    volumes:
+      - ./mysql-master-data:/var/lib/mysql
+      - ./master-my.cnf:/etc/mysql/conf.d/master-my.cnf
+    ports:
+      - "13306:3306"
+
+  mysql-slave:
+    image: mysql:latest
+    command: --server-id=2 --log-bin=mysql-bin --gtid-mode=ON --enforce-gtid-consistency=true
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+    depends_on:
+      - mysql-master
+    volumes:
+      - ./mysql-slave-data:/var/lib/mysql
+      - ./slave-my.cnf:/etc/mysql/conf.d/slave-my.cnf
+    ports:
+      - "14306:3306"
+
+  redis:
+    image: redis:latest
+    volumes:
+      - ./redis-data:/data
+    ports:
+      - "6379:6379"
