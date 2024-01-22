@@ -21,11 +21,25 @@ spring:
       # 이렇게 하면 작은 파일의 경우 디스크에 저장하지 않고 메모리에서 처리함으로써 더 빠른 처리 속도를 얻을 수 있습니다.
       file-size-threshold: 2KB # 임시 파일을 생성하기 전에 메모리에 저장되는 파일의 크기 제한
 
-  datasource:
-    url: jdbc:mysql:${MASTER_DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+#  datasource:
+#    url: jdbc:mysql:${MASTER_DB_URL}
+#    username: ${DB_USERNAME}
+#    password: ${DB_PASSWORD}
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  master:
+    datasource:
+      hikari:
+        jdbc-url: jdbc:mysql:${MASTER_DB_URL}
+        username: ${DB_USERNAME}
+        password: ${DB_PASSWORD}
+  slave:
+    datasource:
+      hikari:
+        jdbc-url: jdbc:mysql:${SLAVE_DB_URL}
+        username: ${DB_USERNAME}
+        password: ${DB_PASSWORD}
+
   #    url: jdbc:h2:tcp://localhost/~/test
   #    driverClassName: org.h2.Driver
   #    username: sa
