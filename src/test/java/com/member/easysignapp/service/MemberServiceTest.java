@@ -3,16 +3,13 @@ package com.member.easysignapp.service;
 import com.member.easysignapp.dto.MemberResponse;
 import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.dto.MemberRequest;
-import com.member.easysignapp.repository.MemberRepository;
+import com.member.easysignapp.repository.master.MasterMemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,7 +18,7 @@ import static org.mockito.Mockito.*;
 public class MemberServiceTest {
 
     @Mock
-    private MemberRepository memberRepository;
+    private MasterMemberRepository masterMemberRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -44,7 +41,7 @@ public class MemberServiceTest {
         // Add roles to the request if needed
 
         // Mock behavior for repository and passwordEncoder
-        when(memberRepository.existsByEmail(request.getEmail())).thenReturn(false); // Email doesn't exist
+        when(masterMemberRepository.existsByEmail(request.getEmail())).thenReturn(false); // Email doesn't exist
         when(passwordEncoder.encode(request.getPassword())).thenReturn("hashedPassword");
 
         // Act
@@ -52,7 +49,7 @@ public class MemberServiceTest {
 
         // Assert
         // Verify that the memberRepository.save method was called once with the correct arguments
-        verify(memberRepository, times(1)).save(any(Member.class));
+        verify(masterMemberRepository, times(1)).save(any(Member.class));
 
         // Add more assertions as needed to verify the response object
         assertNotNull(response);

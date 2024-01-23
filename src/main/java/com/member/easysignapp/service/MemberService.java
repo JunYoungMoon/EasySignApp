@@ -3,7 +3,9 @@ package com.member.easysignapp.service;
 import com.member.easysignapp.annotation.RateLimit;
 import com.member.easysignapp.dto.*;
 import com.member.easysignapp.entity.Member;
-import com.member.easysignapp.repository.MemberRepository;
+import com.member.easysignapp.repository.master.MasterMemberRepository;
+import com.member.easysignapp.repository.master.MasterRefreshTokenRepository;
+import com.member.easysignapp.repository.slave.SlaveRefreshTokenRepository;
 import com.member.easysignapp.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +24,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class MemberService {
-    private final MemberRepository memberRepository;
+    private final MasterMemberRepository masterMemberRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
@@ -35,10 +37,10 @@ public class MemberService {
     @Value("${spring.mail.auth-code-expiration-millis}")
     private long authCodeExpirationMillis;
 
-
+    @Transactional(transactionManager = "masterTransactionManager")
     public MemberResponse signUp(MemberRequest request) {
         // 이메일 중복 체크
-        if (memberRepository.existsByEmail(request.getEmail())) {
+        if (masterMemberRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
 
@@ -67,7 +69,7 @@ public class MemberService {
                 .roles(roles)
                 .build();
 
-        memberRepository.save(member);
+        masterMemberRepository.save(member);
 
         return MemberResponse.builder()
                 .email(member.getEmail())
@@ -78,7 +80,7 @@ public class MemberService {
     public TokenInfo login(MemberRequest request) {
         //아이디 값으로 사용자 정보를 가져와 uuid로 아이디값을 저장한다.
         //소셜 로그인일때 id 값을 jwt로 노출시키기에는 보안적인 부분을 우려.
-        Optional<Member> user = memberRepository.findByEmail(request.getEmail());
+        Optional<Member> user = masterMemberRepository.findByEmail(request.getEmail());
 
         if (user.isPresent()) {
             //사용자의 인증을 위해 이 객체를 사용하여 사용자가 제공한 아이디와 비밀번호를 저장
@@ -99,7 +101,7 @@ public class MemberService {
 
     public MemberInfo userInfo(String uuid){
         // uuid 기반으로 User 테이블 row 찾기
-        Optional<Member> optionalMember = memberRepository.findByUuid(uuid);
+        Optional<Member> optionalMember = masterMemberRepository.findByUuid(uuid);
 
         if (optionalMember.isPresent()) {
             Member member = optionalMember.get();
@@ -118,7 +120,7 @@ public class MemberService {
     @Transactional
     public void updateMemberInfo(String uuid, String newNickname, String newProfileImagePath) {
         // uuid 기반으로 Member 테이블 row 찾기
-        Optional<Member> optionalMember = memberRepository.findByUuid(uuid);
+        Optional<Member> optionalMember = masterMemberRepository.findByUuid(uuid);
 
         if (optionalMember.isPresent()) {
             Member member = optionalMember.get();
@@ -131,7 +133,7 @@ public class MemberService {
                 member.setProfileImage(newProfileImagePath);
             }
 
-            memberRepository.save(member);
+            masterMemberRepository.save(member);
         } else {
             throw new RuntimeException("해당 정보를 가진 사용자가 없습니다.");
         }
@@ -166,7 +168,7 @@ public class MemberService {
     }
 
     private void checkDuplicatedEmail(String email) {
-        Optional<Member> existingMember = memberRepository.findByEmail(email);
+        Optional<Member> existingMember = masterMemberRepository.findByEmail(email);
         if (existingMember.isPresent()) {
             throw new RuntimeException("이미 등록된 이메일 주소입니다: " + email);
         }

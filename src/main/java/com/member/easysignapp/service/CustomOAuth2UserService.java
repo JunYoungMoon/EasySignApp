@@ -5,12 +5,11 @@ import com.member.easysignapp.entity.SocialMember;
 import com.member.easysignapp.enums.AuthProvider;
 import com.member.easysignapp.oauth2.OAuth2UserInfo;
 import com.member.easysignapp.oauth2.OAuth2UserInfoFactory;
-import com.member.easysignapp.repository.MemberRepository;
-import com.member.easysignapp.repository.SocialMemberRepository;
+import com.member.easysignapp.repository.master.MasterMemberRepository;
+import com.member.easysignapp.repository.master.MasterSocialMemberRepository;
 import com.member.easysignapp.security.SecurityMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -26,8 +25,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
-    private final SocialMemberRepository socialMemberRepository;
-    private final MemberRepository memberRepository;
+    private final MasterSocialMemberRepository masterSocialMemberRepository;
+    private final MasterMemberRepository masterMemberRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -41,7 +40,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         AuthProvider authProvider = AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId().toUpperCase());
         OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(authProvider, oAuth2User.getAttributes());
 
-        Optional<SocialMember> optionalUser = socialMemberRepository.findByProviderId(oAuth2UserInfo.getOAuth2Id());
+        Optional<SocialMember> optionalUser = masterSocialMemberRepository.findByProviderId(oAuth2UserInfo.getOAuth2Id());
 
         SocialMember socialMember;
         Member member;
@@ -52,7 +51,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .providerId(oAuth2UserInfo.getOAuth2Id())
                     .build();
 
-            socialMember = socialMemberRepository.save(socialMember);
+            socialMember = masterSocialMemberRepository.save(socialMember);
 
             Long socialMemberId = socialMember.getIdx();
 
@@ -71,11 +70,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .profileImage(oAuth2UserInfo.getProfileImage())
                     .build();
 
-            memberRepository.save(member);
+            masterMemberRepository.save(member);
         } else {
             socialMember = optionalUser.get();
 
-            Optional<Member> foundMember = memberRepository.findBySocialIdx(socialMember.getIdx());
+            Optional<Member> foundMember = masterMemberRepository.findBySocialIdx(socialMember.getIdx());
             if (foundMember.isPresent()) {
                 member = foundMember.get();
             } else {
