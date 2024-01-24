@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableTransactionManagement
@@ -32,19 +34,25 @@ public class MasterDataSourceConfig {
         return DataSourceBuilder.create().build();
     }
 
-    @Primary
     @Bean(name = "masterEntityManagerFactory")
+    @Primary
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(
             EntityManagerFactoryBuilder builder,
             @Qualifier("masterDataSource") DataSource dataSource) {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.hbm2ddl.auto", "update");
+
         return builder
                 .dataSource(dataSource)
                 .packages("com.member.easysignapp.entity")
                 .persistenceUnit("master")
+                .properties(properties)
                 .build();
     }
 
     @Bean(name = "masterTransactionManager")
+    @Primary
     public PlatformTransactionManager transactionManager(
             @Qualifier("masterEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);

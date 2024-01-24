@@ -4,6 +4,7 @@ import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.entity.RefreshToken;
 import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.repository.master.MasterMemberRepository;
+import com.member.easysignapp.repository.slave.SlaveMemberRepository;
 import com.member.easysignapp.service.RefreshTokenService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -30,12 +31,11 @@ public class JwtTokenProvider {
     private long refreshExpiration;
     private final Key key;
     private final RefreshTokenService refreshTokenService;
+    private final SlaveMemberRepository slaveMemberRepository;
 
-    private final MasterMemberRepository masterMemberRepository;
-
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService, MasterMemberRepository masterMemberRepository) {
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService, SlaveMemberRepository slaveMemberRepository) {
         this.refreshTokenService = refreshTokenService;
-        this.masterMemberRepository = masterMemberRepository;
+        this.slaveMemberRepository = slaveMemberRepository;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -91,7 +91,7 @@ public class JwtTokenProvider {
             String uuid = claims.getSubject();
 
             // uuid 기반으로 User 테이블 row 찾기
-            Optional<Member> user = masterMemberRepository.findByUuid(uuid);
+            Optional<Member> user = slaveMemberRepository.findByUuid(uuid);
 
             if (user.isPresent()) {
                 SecurityMember securityMember = new SecurityMember(user.get());

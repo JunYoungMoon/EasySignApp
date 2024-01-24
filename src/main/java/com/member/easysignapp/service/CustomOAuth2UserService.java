@@ -7,6 +7,8 @@ import com.member.easysignapp.oauth2.OAuth2UserInfo;
 import com.member.easysignapp.oauth2.OAuth2UserInfoFactory;
 import com.member.easysignapp.repository.master.MasterMemberRepository;
 import com.member.easysignapp.repository.master.MasterSocialMemberRepository;
+import com.member.easysignapp.repository.slave.SlaveMemberRepository;
+import com.member.easysignapp.repository.slave.SlaveSocialMemberRepository;
 import com.member.easysignapp.security.SecurityMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,9 @@ import java.util.UUID;
 @Slf4j
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final MasterSocialMemberRepository masterSocialMemberRepository;
+    private final SlaveSocialMemberRepository socialMemberRepository;
     private final MasterMemberRepository masterMemberRepository;
+    private final SlaveMemberRepository slaveMemberRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -40,7 +44,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         AuthProvider authProvider = AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId().toUpperCase());
         OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(authProvider, oAuth2User.getAttributes());
 
-        Optional<SocialMember> optionalUser = masterSocialMemberRepository.findByProviderId(oAuth2UserInfo.getOAuth2Id());
+        Optional<SocialMember> optionalUser = socialMemberRepository.findByProviderId(oAuth2UserInfo.getOAuth2Id());
 
         SocialMember socialMember;
         Member member;
@@ -74,7 +78,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         } else {
             socialMember = optionalUser.get();
 
-            Optional<Member> foundMember = masterMemberRepository.findBySocialIdx(socialMember.getIdx());
+            Optional<Member> foundMember = slaveMemberRepository.findBySocialIdx(socialMember.getIdx());
             if (foundMember.isPresent()) {
                 member = foundMember.get();
             } else {

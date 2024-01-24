@@ -8,7 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface MasterRefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
-    Optional<RefreshToken> findByToken(String token);
-
     void deleteByToken(String token);
 }

@@ -9,6 +9,4 @@ import java.util.Optional;
 @Repository
 public interface SlaveRefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
     Optional<RefreshToken> findByToken(String token);
-
-    void deleteByToken(String token);
 }
