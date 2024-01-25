@@ -8,5 +8,4 @@ import java.util.Optional;
 
 @Repository
 public interface MasterSocialMemberRepository extends JpaRepository<SocialMember, Long> {
-    Optional<SocialMember> findByProviderId(String id);
 }

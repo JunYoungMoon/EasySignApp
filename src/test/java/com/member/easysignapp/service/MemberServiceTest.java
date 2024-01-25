@@ -4,6 +4,7 @@ import com.member.easysignapp.dto.MemberResponse;
 import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.dto.MemberRequest;
 import com.member.easysignapp.repository.master.MasterMemberRepository;
+import com.member.easysignapp.repository.slave.SlaveMemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -18,7 +19,7 @@ import static org.mockito.Mockito.*;
 public class MemberServiceTest {
 
     @Mock
-    private MasterMemberRepository masterMemberRepository;
+    private SlaveMemberRepository slaveMemberRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -41,7 +42,7 @@ public class MemberServiceTest {
         // Add roles to the request if needed
 
         // Mock behavior for repository and passwordEncoder
-        when(masterMemberRepository.existsByEmail(request.getEmail())).thenReturn(false); // Email doesn't exist
+        when(slaveMemberRepository.existsByEmail(request.getEmail())).thenReturn(false); // Email doesn't exist
         when(passwordEncoder.encode(request.getPassword())).thenReturn("hashedPassword");
 
         // Act
@@ -49,7 +50,7 @@ public class MemberServiceTest {
 
         // Assert
         // Verify that the memberRepository.save method was called once with the correct arguments
-        verify(masterMemberRepository, times(1)).save(any(Member.class));
+        verify(slaveMemberRepository, times(1)).save(any(Member.class));
 
         // Add more assertions as needed to verify the response object
         assertNotNull(response);
