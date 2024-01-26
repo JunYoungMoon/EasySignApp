@@ -7,6 +7,7 @@ import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -49,10 +50,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             handleExpiredJwtException(request, response, token, e);
             return; // 필터 체인 중단
         } catch (JwtException | IllegalArgumentException e) {
-            handleHttpResponse(request, response, "Invalid JWT" , "");
+            handleHttpResponse(request, response, "Invalid JWT" , null);
             return;
         } catch (SecurityException e) {
-            handleHttpResponse(request, response,"Forbidden" , "");
+            handleHttpResponse(request, response,"Forbidden" , null);
             return;
         }
 
@@ -66,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if ("refresh".equals(tokenType)) {
             //refresh 일때는 검증 및 재발행
-            boolean isRefreshTokenValid = jwtTokenProvider.isRefreshTokenValid(token);
+            boolean isRefreshTokenValid = jwtTokenProvider.isRefreshTokenValid(token, claims.getSubject());
 
             if (isRefreshTokenValid) {
                 // Refresh 토큰으로부터 유저 정보 및 권한 추출
@@ -75,14 +76,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 새로운 액세스 토큰 발급 및 리턴
                 TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
 
-                // 기존 Refresh 토큰 제거
-                jwtTokenProvider.deleteRefreshToken(token);
-
                 // Access Refresh 토큰 생성후 전달
                 handleHttpResponse(request, response, "A new token has been created.", new ObjectMapper().writeValueAsString(newTokenInfo));
             } else {
                 // refresh 토큰 정보가 올바르지 않을때
-                handleHttpResponse(request, response, "Validation failed with the corresponding refresh token." ,"");
+                handleHttpResponse(request, response, "Validation failed with the corresponding refresh token." ,null);
             }
         } else {
             //access 토큰이 만료되었을때 refresh 토큰 요청
@@ -97,12 +95,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void handleHttpResponse(HttpServletRequest request, HttpServletResponse response, String message, String data) throws IOException {
         ApiResponse apiResponse = ApiResponse.builder()
                 .status("success")
-                .csrfToken((String) request.getAttribute("myCsrfToken"))
+                .csrfToken(((CsrfToken) request.getAttribute(CsrfToken.class.getName())).getToken())
                 .msg(message)
                 .data(data)
                 .build();
 
-//        response.setStatus(statusCode);
         response.setContentType("application/json");
         response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
     }

@@ -1,11 +1,9 @@
 package com.member.easysignapp.security;
 
 import com.member.easysignapp.entity.Member;
-import com.member.easysignapp.entity.RefreshToken;
 import com.member.easysignapp.dto.TokenInfo;
-import com.member.easysignapp.repository.master.MasterMemberRepository;
 import com.member.easysignapp.repository.slave.SlaveMemberRepository;
-import com.member.easysignapp.service.RefreshTokenService;
+import com.member.easysignapp.service.RedisService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -19,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.security.Key;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,14 +29,14 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration.refresh}")
     private long refreshExpiration;
     private final Key key;
-    private final RefreshTokenService refreshTokenService;
     private final SlaveMemberRepository slaveMemberRepository;
+    private final RedisService redisService;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenService refreshTokenService, SlaveMemberRepository slaveMemberRepository) {
-        this.refreshTokenService = refreshTokenService;
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, SlaveMemberRepository slaveMemberRepository, RedisService redisService) {
         this.slaveMemberRepository = slaveMemberRepository;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
+        this.redisService = redisService;
     }
 
     public TokenInfo generateToken(Authentication authentication) {
@@ -67,8 +66,8 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        // Refresh Token DB 저장
-        refreshTokenService.saveRefreshToken(uuid, refreshToken, new Date(now + refreshExpiration).toInstant());
+        // Refresh Token Redis 저장
+        redisService.setValues(uuid, refreshToken, Duration.ofMillis(refreshExpiration));
 
         return TokenInfo.builder()
                 .grantType("Bearer")
@@ -135,13 +134,13 @@ public class JwtTokenProvider {
         }
     }
 
-    public boolean isRefreshTokenValid(String token) {
-        Optional<RefreshToken> byToken = refreshTokenService.findByToken(token);
+    public boolean isRefreshTokenValid(String token, String uuid) {
+        String refreshToken = redisService.getValues(uuid);
 
-        return byToken.isPresent();
-    }
+        if (!redisService.checkExistsValue(refreshToken)) {
+            return false;
+        }
 
-    public void deleteRefreshToken(String token){
-        refreshTokenService.deleteRefreshToken(token);
+        return refreshToken.equals(token);
     }
 }
