@@ -45,8 +45,11 @@ public class MemberService {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
         }
 
-        if (request.getPassword() == null || request.getPassword().isEmpty()) {
-            throw new RuntimeException("플랫폼 가입을 위해서는 비밀번호가 필요합니다.");
+        // 메일 인증 체크
+        String storedEmailVerification = redisService.getValues(EMAIL_VERIFICATION_PREFIX + request.getEmail());
+
+        if (!redisService.checkExistsValue(storedEmailVerification) || !storedEmailVerification.equals("success")) {
+            throw new RuntimeException("메일 인증이 올바르게 되지 않았습니다.");
         }
 
         // 비밀번호를 Spring Security를 이용하여 해싱하여 저장
