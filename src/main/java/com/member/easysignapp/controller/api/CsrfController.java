@@ -19,6 +19,7 @@ public class CsrfController {
     public CsrfController(MessageSourceAccessor messageSourceAccessor) {
         this.messageSourceAccessor = messageSourceAccessor;
     }
+
     @GetMapping("/getcsrf")
     public ApiResponse getCsrfToken(HttpServletRequest servletRequest) {
 
