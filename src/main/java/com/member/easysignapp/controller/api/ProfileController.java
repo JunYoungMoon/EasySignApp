@@ -1,6 +1,9 @@
 package com.member.easysignapp.controller.api;
 
+import com.member.easysignapp.service.MemberService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +27,13 @@ public class ProfileController {
     @Value("${upload.profile.directory}")
     private String uploadPath;
 
+    private final MessageSourceAccessor messageSourceAccessor;
+
+    @Autowired
+    public ProfileController(MessageSourceAccessor messageSourceAccessor) {
+        this.messageSourceAccessor = messageSourceAccessor;
+    }
+
     @GetMapping("/{fileName:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String fileName) {
         // 외부 디렉터리 경로 설정
@@ -34,7 +44,9 @@ public class ProfileController {
         try {
             resource = new UrlResource(filePath.toUri());
         } catch (MalformedURLException e) {
-            throw new RuntimeException("File not found");
+            String errorMessage = messageSourceAccessor.getMessage("profile.serveFile.fileFind.error.message");
+
+            throw new RuntimeException(errorMessage);
         }
 
         // 파일의 MIME 타입 동적으로 결정
@@ -42,7 +54,9 @@ public class ProfileController {
         try {
             contentType = determineMimeType(resource);
         } catch (IOException e) {
-            throw new RuntimeException("Could not determine file type");
+            String errorMessage = messageSourceAccessor.getMessage("profile.serveFile.fileMime.error.message");
+
+            throw new RuntimeException(errorMessage);
         }
 
         // 파일 다운로드를 위한 HttpHeaders 설정

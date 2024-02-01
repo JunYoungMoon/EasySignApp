@@ -5,6 +5,8 @@ import com.member.easysignapp.component.APIRateLimiter;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -13,8 +15,11 @@ public class RateLimitAspect {
 
     private final APIRateLimiter apiRateLimiter;
 
-    public RateLimitAspect(APIRateLimiter apiRateLimiter) {
+    private final MessageSourceAccessor messageSourceAccessor;
+
+    public RateLimitAspect(APIRateLimiter apiRateLimiter, MessageSourceAccessor messageSourceAccessor) {
         this.apiRateLimiter = apiRateLimiter;
+        this.messageSourceAccessor = messageSourceAccessor;
     }
 
     @Around("@annotation(rateLimit)")
@@ -26,7 +31,9 @@ public class RateLimitAspect {
         if (apiRateLimiter.tryConsume(apiKey, limit, period)) {
             return joinPoint.proceed();
         } else {
-            throw new RuntimeException("Rate limit exceeded for key: " + apiKey);
+            String successMessage = messageSourceAccessor.getMessage("rateLimit.msessage", new Object[]{apiKey});
+
+            throw new RuntimeException(successMessage);
         }
     }
 }

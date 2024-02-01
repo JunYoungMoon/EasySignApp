@@ -3,7 +3,9 @@ package com.member.easysignapp.controller.api;
 import com.member.easysignapp.annotation.RateLimit;
 import com.member.easysignapp.dto.*;
 import com.member.easysignapp.service.MemberService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,37 +36,46 @@ public class MemberController {
     private String serverUrl;
 
     private final MemberService memberService;
+    private final MessageSourceAccessor messageSourceAccessor;
 
-    public MemberController(MemberService memberService) {
+    @Autowired
+    public MemberController(MemberService memberService, MessageSourceAccessor messageSourceAccessor) {
         this.memberService = memberService;
+        this.messageSourceAccessor = messageSourceAccessor;
     }
 
     @PostMapping("/signup")
     public ApiResponse signUp(HttpServletRequest servletRequest, @RequestBody @Valid MemberRequest memberRequest) {
+        String successMessage = messageSourceAccessor.getMessage("member.signUp.success.message");
+
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg("Success message")
+                .msg(successMessage)
                 .data(memberService.signUp(memberRequest))
                 .build();
     }
 
     @PostMapping("/login")
     public ApiResponse login(HttpServletRequest servletRequest, @RequestBody MemberRequest memberRequest) {
+        String successMessage = messageSourceAccessor.getMessage("member.login.success.message");
+
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg("Success message")
+                .msg(successMessage)
                 .data(memberService.login(memberRequest))
                 .build();
     }
 
     @PostMapping("/check-auth")
     public ApiResponse checkAuth(HttpServletRequest servletRequest, @AuthenticationPrincipal UserDetails userDetails) {
+        String successMessage = messageSourceAccessor.getMessage("member.checkAuth.success.message");
+
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg("Success message")
+                .msg(successMessage)
                 .data(userDetails != null)
                 .build();
     }
@@ -73,10 +84,12 @@ public class MemberController {
     public ApiResponse sendMail(HttpServletRequest servletRequest, @RequestBody @Valid EmailRequest emailRequest) {
         memberService.sendCodeToEmail(emailRequest);
 
+        String successMessage = messageSourceAccessor.getMessage("member.sendMail.success.message");
+
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg("인증 코드 전송 완료 메일을 확인해 주세요.")
+                .msg(successMessage)
                 .build();
     }
 
@@ -84,10 +97,12 @@ public class MemberController {
     public ApiResponse verificationEmail(HttpServletRequest servletRequest, @RequestBody @Valid EmailVerificationRequest emailVerificationRequest) {
         memberService.verifiedCode(emailVerificationRequest);
 
+        String successMessage = messageSourceAccessor.getMessage("member.verificationEmail.success.message");
+
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg("이메일 인증에 성공 하였습니다.")
+                .msg(successMessage)
                 .build();
     }
 
@@ -100,10 +115,12 @@ public class MemberController {
         Object principal = authentication.getPrincipal();
         String uuid = ((UserDetails) principal).getUsername();
 
+        String successMessage = messageSourceAccessor.getMessage("member.getUserInfo.success.message");
+
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg("Success message")
+                .msg(successMessage)
                 .data(memberService.userInfo(uuid))
                 .build();
     }
@@ -157,9 +174,12 @@ public class MemberController {
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("uploadedImageName", uploadedImageName);
 
+        String successMessage = messageSourceAccessor.getMessage("member.setUserInfo.success.message");
+
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
+                .msg(successMessage)
                 .data(responseData)
                 .build();
     }

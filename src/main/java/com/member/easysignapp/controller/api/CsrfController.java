@@ -1,5 +1,6 @@
 package com.member.easysignapp.controller.api;
 
+import com.member.easysignapp.annotation.RateLimit;
 import com.member.easysignapp.dto.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -22,12 +23,13 @@ public class CsrfController {
 
     @GetMapping("/getcsrf")
     public ApiResponse getCsrfToken(HttpServletRequest servletRequest) {
+        CsrfToken csrfToken = (CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName());
 
-        String successMessage = messageSourceAccessor.getMessage("success.message.key");
+        String successMessage = messageSourceAccessor.getMessage("csrf.success.message", new Object[]{csrfToken.getToken()});
 
         return ApiResponse.builder()
                 .status("success")
-                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
+                .csrfToken(csrfToken.getToken())
                 .msg(successMessage)
                 .build();
     }

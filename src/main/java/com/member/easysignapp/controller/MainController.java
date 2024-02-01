@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class MainController {
-
+    /*SSR 방식은 현재 사용하지 않습니다.*/
     @GetMapping("/")
     public String sendData(Model model) {
         String message = "Hello, world!!";
