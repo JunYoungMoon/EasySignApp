@@ -186,13 +186,15 @@ public class MemberController {
 
     @PostMapping("/test")
     public ApiResponse test(HttpServletRequest servletRequest) {
+        String successMessage = messageSourceAccessor.getMessage("member.test.message");
+
         Map<String, Object> data = new HashMap<>();
         data.put("auth", true);
 
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg("Success message")
+                .msg(successMessage)
                 .data(data)
                 .build();
     }

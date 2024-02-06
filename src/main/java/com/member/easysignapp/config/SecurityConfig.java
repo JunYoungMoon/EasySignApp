@@ -43,6 +43,7 @@ public class SecurityConfig {
             "/api/email-verification",
             "/api/login",
             "/api/getcsrf",
+            "/api/test",
             "/login/**",
             "/oauth2/**",
             "/api/check-auth",
