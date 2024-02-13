@@ -1,6 +1,5 @@
 package com.member.easysignapp.controller.api;
 
-import com.member.easysignapp.annotation.RateLimit;
 import com.member.easysignapp.dto.*;
 import com.member.easysignapp.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;

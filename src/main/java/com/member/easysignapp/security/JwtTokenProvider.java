@@ -9,6 +9,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,12 +32,14 @@ public class JwtTokenProvider {
     private final Key key;
     private final SlaveMemberRepository slaveMemberRepository;
     private final RedisService redisService;
+    private final MessageSourceAccessor messageSourceAccessor;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, SlaveMemberRepository slaveMemberRepository, RedisService redisService) {
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, SlaveMemberRepository slaveMemberRepository, RedisService redisService, MessageSourceAccessor messageSourceAccessor) {
         this.slaveMemberRepository = slaveMemberRepository;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.redisService = redisService;
+        this.messageSourceAccessor = messageSourceAccessor;
     }
 
     public TokenInfo generateToken(Authentication authentication) {
@@ -102,11 +105,15 @@ public class JwtTokenProvider {
                 UserDetails principal = new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities);
                 return new UsernamePasswordAuthenticationToken(principal, "", authorities);
             } else {
-                throw new RuntimeException("해당 정보를 가진 사용자가 없습니다.");
+                String noUserMessage = messageSourceAccessor.getMessage("jwt.tokenProvider.noUser.message");
+
+                throw new RuntimeException(noUserMessage);
             }
         } else {
             if (claims.get("auth") == null) {
-                throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+                String noPermissionMessage = messageSourceAccessor.getMessage("jwt.tokenProvider.noPermission.message");
+
+                throw new RuntimeException(noPermissionMessage);
             }
 
             // 클레임에서 권한 정보 가져오기

@@ -5,6 +5,7 @@ import com.member.easysignapp.dto.ApiResponse;
 import com.member.easysignapp.dto.TokenInfo;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -22,6 +23,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final MessageSourceAccessor messageSourceAccessor;
 
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
@@ -77,10 +80,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
 
                 // Access Refresh 토큰 생성후 전달
-                handleHttpResponse(request, response, "A new token has been created.", new ObjectMapper().writeValueAsString(newTokenInfo));
+                String createdSuccessMessage = messageSourceAccessor.getMessage("jwt.authFilter.createdToken.success.message");
+                handleHttpResponse(request, response, createdSuccessMessage, new ObjectMapper().writeValueAsString(newTokenInfo));
             } else {
-                // refresh 토큰 정보가 올바르지 않을때
-                handleHttpResponse(request, response, "Validation failed with the corresponding refresh token." ,null);
+                // refresh 토큰 정보가 올바르지 않음
+                String validationFailMessage = messageSourceAccessor.getMessage("jwt.authFilter.validationToken.fail.message");
+                handleHttpResponse(request, response, validationFailMessage ,null);
             }
         } else {
             //access 토큰이 만료되었을때 refresh 토큰 요청
@@ -88,7 +93,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("refreshTokenRequired", refreshTokenRequired);
 
-            handleHttpResponse(request, response, "A new token has been created.", new ObjectMapper().writeValueAsString(responseData));
+            String requestRefreshTokenMessage = messageSourceAccessor.getMessage("jwt.authFilter.requestRefreshToken.fail.message");
+
+            handleHttpResponse(request, response, requestRefreshTokenMessage, new ObjectMapper().writeValueAsString(responseData));
         }
     }
 

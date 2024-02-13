@@ -40,7 +40,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        log.info("OAuth2 Login 성공");
         // JWT 생성
         TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
 
@@ -50,6 +49,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         redirectUrlBuilder.queryParam("refreshToken", newTokenInfo.getRefreshToken());
         redirectUrlBuilder.queryParam("csrfToken", request.getAttribute("myCsrfToken"));
         String redirectUrl = redirectUrlBuilder.toUriString();
+
+        log.info("OAuth2 Login 성공");
 
         // 클라이언트로 리다이렉트
         response.sendRedirect(redirectUrl);
