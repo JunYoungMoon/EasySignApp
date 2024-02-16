@@ -8,6 +8,7 @@ import com.member.easysignapp.repository.slave.SlaveMemberRepository;
 import com.member.easysignapp.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -25,6 +26,7 @@ import java.util.*;
 public class MemberService {
     private final MasterMemberRepository masterMemberRepository;
     private final SlaveMemberRepository slaveMemberRepository;
+    private final MessageSourceAccessor messageSourceAccessor;
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -42,14 +44,18 @@ public class MemberService {
     public MemberResponse signUp(MemberRequest request) {
         // 이메일 중복 체크
         if (slaveMemberRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("이미 사용중인 이메일입니다.");
+            String failMessage = messageSourceAccessor.getMessage("member.alreadyEmail.fail.message");
+
+            throw new RuntimeException(failMessage);
         }
 
         // 메일 인증 체크
         String storedEmailVerification = redisService.getValues(EMAIL_VERIFICATION_PREFIX + request.getEmail());
 
         if (!redisService.checkExistsValue(storedEmailVerification) || !storedEmailVerification.equals("success")) {
-            throw new RuntimeException("메일 인증이 올바르게 되지 않았습니다.");
+            String failMessage = messageSourceAccessor.getMessage("member.verificationEmail.fail.message");
+
+            throw new RuntimeException(failMessage);
         }
 
         // 비밀번호를 Spring Security를 이용하여 해싱하여 저장
@@ -99,7 +105,9 @@ public class MemberService {
 
             return jwtTokenProvider.generateToken(authentication);
         } else {
-            throw new RuntimeException(request.getEmail() + " 회원을 찾을 수 없습니다");
+            String failMessage = messageSourceAccessor.getMessage("member.notFound.fail.message");
+
+            throw new RuntimeException(request.getEmail() + " " + failMessage);
         }
     }
 
@@ -117,7 +125,9 @@ public class MemberService {
                     .nickName(member.getNickname())
                     .build();
         } else {
-            throw new RuntimeException("해당 정보를 가진 사용자가 없습니다.");
+            String failMessage = messageSourceAccessor.getMessage("member.notFound.fail.message");
+
+            throw new RuntimeException(failMessage);
         }
     }
 
@@ -139,7 +149,9 @@ public class MemberService {
 
             masterMemberRepository.save(member);
         } else {
-            throw new RuntimeException("해당 정보를 가진 사용자가 없습니다.");
+            String failMessage = messageSourceAccessor.getMessage("member.notFound.fail.message");
+
+            throw new RuntimeException(failMessage);
         }
     }
 
@@ -160,10 +172,10 @@ public class MemberService {
         }
     }
 
-    @RateLimit(key = "sendEmailPoint", limit = 1, period = 300000)
+    @RateLimit(key = "sendEmailPoint", limit = 2, period = 300000)
     public void sendCodeToEmail(EmailRequest emailRequest) {
         checkDuplicatedEmail(emailRequest.getEmail());
-        String title = "Easy Sign App 이메일 인증 번호";
+        String title = messageSourceAccessor.getMessage("email.title.message", new Object[]{"Easy Sign App"});
         String authCode = this.createCode();
 //        mailService.sendEmail(emailRequest.getEmail(), title, authCode);
 
@@ -174,7 +186,9 @@ public class MemberService {
     private void checkDuplicatedEmail(String email) {
         Optional<Member> existingMember = slaveMemberRepository.findByEmail(email);
         if (existingMember.isPresent()) {
-            throw new RuntimeException("이미 등록된 이메일 주소입니다: " + email);
+            String failMessage = messageSourceAccessor.getMessage("member.alreadyEmail.fail.message");
+
+            throw new RuntimeException(failMessage + " : " + email);
         }
     }
 
@@ -183,11 +197,15 @@ public class MemberService {
         String storedAuthCode = redisService.getValues(AUTH_CODE_PREFIX + emailVerificationRequest.getEmail());
 
         if (!redisService.checkExistsValue(storedAuthCode)) {
-            throw new RuntimeException("메일 인증 시간이 만료 되었습니다.");
+            String failMessage = messageSourceAccessor.getMessage("email.authExpired.fail.message");
+
+            throw new RuntimeException(failMessage);
         }
 
         if (!storedAuthCode.equals(emailVerificationRequest.getAuthCode())) {
-            throw new RuntimeException("올바른 인증 코드가 아닙니다.");
+            String failMessage = messageSourceAccessor.getMessage("email.notValidCode.fail.message");
+
+            throw new RuntimeException(failMessage);
         }
 
         //실제 가입을 할때 체크할 데이터 유효 기간은 하루

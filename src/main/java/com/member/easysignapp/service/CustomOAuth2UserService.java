@@ -12,6 +12,7 @@ import com.member.easysignapp.repository.slave.SlaveSocialMemberRepository;
 import com.member.easysignapp.security.SecurityMember;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -31,6 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final SlaveSocialMemberRepository socialMemberRepository;
     private final MasterMemberRepository masterMemberRepository;
     private final SlaveMemberRepository slaveMemberRepository;
+    private final MessageSourceAccessor messageSourceAccessor;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -82,7 +84,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             if (foundMember.isPresent()) {
                 member = foundMember.get();
             } else {
-                throw new RuntimeException("Member not found");
+                String failMessage = messageSourceAccessor.getMessage("member.notFound.fail.message");
+
+                throw new RuntimeException(failMessage);
             }
         }
 

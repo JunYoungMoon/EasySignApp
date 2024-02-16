@@ -2,6 +2,7 @@ package com.member.easysignapp.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MailService {
 
     private final JavaMailSender emailSender;
+    private final MessageSourceAccessor messageSourceAccessor;
 
 
     public void sendEmail(String toEmail,
@@ -23,7 +25,9 @@ public class MailService {
         try {
             emailSender.send(emailForm);
         } catch (RuntimeException e) {
-            throw new RuntimeException("메일 전송 실패");
+            String failMessage = messageSourceAccessor.getMessage("email.send.fail.message");
+
+            throw new RuntimeException(failMessage);
         }
     }
 

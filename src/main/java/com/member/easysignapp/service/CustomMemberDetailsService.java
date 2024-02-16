@@ -3,6 +3,7 @@ package com.member.easysignapp.service;
 import com.member.easysignapp.repository.slave.SlaveMemberRepository;
 import com.member.easysignapp.security.SecurityMember;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,10 +13,13 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomMemberDetailsService implements UserDetailsService {
     private final SlaveMemberRepository slaveMemberRepository;
+    private final MessageSourceAccessor messageSourceAccessor;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        String failMessage = messageSourceAccessor.getMessage("member.notFound.fail.message");
+
         return new SecurityMember(slaveMemberRepository.findByUuid(username)
-                .orElseThrow(() -> new RuntimeException("잘못된 이메일 또는 비밀번호")));
+                .orElseThrow(() -> new RuntimeException(failMessage)));
     }
 }
