@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 public class MemberRequest extends BaseRequest{
     @NotEmpty(message = "비밀번호는 필수 입력 사항 입니다.")
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "비밀번호는 최소 8자 이상이어야 하며, 최소 하나의 문자와 하나의 숫자를 포함해야 합니다.")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,30}$", message = "비밀번호는 최소 8자 최대 30자 이어야 하며, 최소 하나의 숫자와 특수문자를 포함해야 합니다.")
     private String password;
     @NotEmpty(message = "이름은 필수 입력 사항 입니다.")
     private String name;
