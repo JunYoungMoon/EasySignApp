@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +25,12 @@ public class GlobalExceptionHandler {
         BindingResult result = ex.getBindingResult();
         List<FieldError> fieldErrors = result.getFieldErrors();
 
+        FieldError firstError = fieldErrors.isEmpty() ? null : fieldErrors.get(0);
+
         ApiResponse response = ApiResponse.builder()
                 .status("fail")
+                .msg(firstError != null ? firstError.getDefaultMessage() : "Validation failed")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg("Validation failed")
-                .data(getFieldErrorMessages(fieldErrors))
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
