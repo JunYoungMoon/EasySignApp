@@ -44,6 +44,7 @@ public class SecurityConfig {
             "/api/send-email-code",
             "/api/email-verification",
             "/api/login",
+            "/api/user-info",
             "/api/getcsrf",
             "/api/test",
             "/login/**",
