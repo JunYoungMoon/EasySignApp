@@ -81,6 +81,9 @@ public class MemberService {
 
         masterMemberRepository.save(member);
 
+        // 회원가입 성공 후에 storedEmailVerification 값을 제거
+        redisService.deleteValues(EMAIL_VERIFICATION_PREFIX + request.getEmail());
+
         return MemberResponse.builder()
                 .email(member.getEmail())
                 .name(member.getName())
