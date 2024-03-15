@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,7 +48,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         UriComponentsBuilder redirectUrlBuilder = UriComponentsBuilder.fromUriString(clientUrl + "/auth/callback");
         redirectUrlBuilder.queryParam("accessToken", newTokenInfo.getAccessToken());
         redirectUrlBuilder.queryParam("refreshToken", newTokenInfo.getRefreshToken());
-        redirectUrlBuilder.queryParam("csrfToken", request.getAttribute("myCsrfToken"));
+        redirectUrlBuilder.queryParam("csrfToken", ((CsrfToken) request.getAttribute(CsrfToken.class.getName())).getToken());
         String redirectUrl = redirectUrlBuilder.toUriString();
 
         log.info("OAuth2 Login 성공");
