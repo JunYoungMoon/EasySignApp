@@ -12,15 +12,15 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    @Value("${client.app.url}")
-    private String clientUrl;
+    @Value("${cors.allow.url}")
+    private List<String> corsUrl;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of(clientUrl));
+        config.setAllowedOrigins(corsUrl);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("*"));

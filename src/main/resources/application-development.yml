@@ -130,11 +130,15 @@ jwt:
 
 client:
   app:
-    url: https://easy.sgmchain.net
+    url: http://127.0.0.1:3000
+
+cors:
+  allow:
+    url: http://127.0.0.1:3000
 
 server:
   app:
-    url: https://easy-api.sgmchain.net
+    url: http://127.0.0.1:8080
 
 upload:
   profile:
