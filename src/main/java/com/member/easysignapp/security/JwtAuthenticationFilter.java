@@ -89,13 +89,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } else {
             //access 토큰이 만료되었을때 refresh 토큰 요청
-            boolean refreshTokenRequired = true;
-            Map<String, Object> responseData = new HashMap<>();
-            responseData.put("refreshTokenRequired", refreshTokenRequired);
+            //boolean refreshTokenRequired = true;
+            //Map<String, Object> responseData = new HashMap<>();
+            //responseData.put("refreshTokenRequired", refreshTokenRequired);
 
             String requestRefreshTokenMessage = messageSourceAccessor.getMessage("jwt.authFilter.requestRefreshToken.fail.message");
 
-            handleHttpResponse(request, response, requestRefreshTokenMessage, new ObjectMapper().writeValueAsString(responseData));
+            handleHttpResponse(request, response, requestRefreshTokenMessage, "refreshTokenRequired");
         }
     }
 

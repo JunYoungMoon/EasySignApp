@@ -30,7 +30,7 @@ public class Member {
     private String name;
     @Column(length = 100)
     private String password;
-    @Column(length = 100)
+    @Column(length = 200)
     private String profileImage;
     @Column(length = 20)
     private String nickname;

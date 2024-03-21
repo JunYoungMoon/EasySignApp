@@ -24,15 +24,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import static com.member.easysignapp.util.FileUtil.generateUniqueFileName;
 import static com.member.easysignapp.util.FileUtil.sanitizeFileName;
+import static com.member.easysignapp.util.FileUtil.getFileExtension;
 
 @RestController
 @RequestMapping("/api")
 public class MemberController {
     @Value("${upload.profile.directory}")
     private String uploadPath;
-    @Value("${server.app.url}")
-    private String serverUrl;
 
     private final MemberService memberService;
     private final MessageSourceAccessor messageSourceAccessor;
@@ -140,10 +140,11 @@ public class MemberController {
                 // 파일 이름을 유니크하게 만들어서 저장
                 String originalFileName = profileImage.getOriginalFilename();
 
-                // 파일 이름이 null이 아닌 경우에만 정리 및 저장을 수행
+                // 파일 이름이 null이 아닌 경우에만 저장을 수행
                 if (originalFileName != null && !originalFileName.isEmpty()) {
                     String sanitizedFileName = sanitizeFileName(originalFileName);
-                    uploadedImageName = uuid + "_" + sanitizedFileName;
+                    String fileExtension = getFileExtension(originalFileName);
+                    uploadedImageName = generateUniqueFileName(uuid, sanitizedFileName, fileExtension);
 
                     Path uploadFolderPath = Paths.get(uploadPath);
 
@@ -157,14 +158,15 @@ public class MemberController {
                     // try-with-resources를 사용하여 InputStream 자동으로 닫기
                     try (InputStream inputStream = profileImage.getInputStream()) {
                         // 파일 복사
+                        // 저장은 디렉토리 최상위 /easy/upload/profile/파일명으로 저장
                         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-                        uploadedImagePath = serverUrl + uploadPath + "/" + uploadedImageName;
                     }
                 }
             }
 
             // 닉네임, 프로필이미지 업데이트
-            memberService.updateMemberInfo(uuid, nickname, uploadedImagePath);
+            // DB는 /profile/파일명으로 저장 외부에서 이미지 호출시 저장된 내부 경로를 숨기기 위함
+            memberService.updateMemberInfo(uuid, nickname, "/profile/" + uploadedImageName);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
