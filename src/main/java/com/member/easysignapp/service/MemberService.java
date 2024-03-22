@@ -136,26 +136,20 @@ public class MemberService {
 
     @Transactional
     public void updateMemberInfo(String uuid, String newNickname, String newProfileImagePath) {
+        String failMessage = messageSourceAccessor.getMessage("member.notFound.fail.message");
+
         // uuid 기반으로 Member 테이블 row 찾기
-        Optional<Member> optionalMember = slaveMemberRepository.findByUuid(uuid);
+        Member member = slaveMemberRepository.findByUuid(uuid)
+                .orElseThrow(() -> new RuntimeException(failMessage));
 
-        if (optionalMember.isPresent()) {
-            Member member = optionalMember.get();
-
-            if (newNickname != null) {
-                member.setNickname(newNickname);
-            }
-
-            if (newProfileImagePath != null) {
-                member.setProfileImage(newProfileImagePath);
-            }
-
-            masterMemberRepository.save(member);
-        } else {
-            String failMessage = messageSourceAccessor.getMessage("member.notFound.fail.message");
-
-            throw new RuntimeException(failMessage);
+        if (newNickname != null) {
+            member.setNickname(newNickname);
         }
+        if (newProfileImagePath != null) {
+            member.setProfileImage("/profile/" + newProfileImagePath);
+        }
+
+        masterMemberRepository.save(member);
     }
 
     private String createCode() {

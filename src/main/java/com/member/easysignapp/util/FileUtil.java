@@ -1,18 +1,26 @@
 package com.member.easysignapp.util;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Objects;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.io.InputStream;
 
 public class FileUtil {
-
     // 파일명에서 특수 문자 제거
-    public static String sanitizeFileName(String fileName) {
+    private static String sanitizeFileName(String fileName) {
         return fileName.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
     }
 
-    // 파일명 생성을 위한 유틸리티 메서드
-    public static String generateUniqueFileName(String uuid, String originalFileName, String fileExtension) {
+    // 조합 파일명 생성
+    private static String generateUniqueFileName(String uuid, String originalFileName, String fileExtension) {
         try {
             // 파일명을 해시로 변환
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -35,12 +43,37 @@ public class FileUtil {
     }
 
     // 파일 확장자 추출
-    public static String getFileExtension(String fileName) {
+    private static String getFileExtension(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex > 0) {
             return fileName.substring(dotIndex);
         }
+
         return "";
+    }
+
+    // 프로필 이미지 로컬 저장
+    public static String saveProfileImage(MultipartFile profileImage, String uuid, String uploadPath) throws IOException {
+        if (profileImage == null || profileImage.isEmpty()) {
+            return null;
+        }
+
+        String originalFileName = profileImage.getOriginalFilename();
+        String sanitizedFileName = sanitizeFileName(Objects.requireNonNull(originalFileName));
+        String fileExtension = getFileExtension(originalFileName);
+        String newProfileImage = generateUniqueFileName(uuid, sanitizedFileName, fileExtension);
+
+        Path uploadFolderPath = Paths.get(uploadPath);
+        if (!Files.exists(uploadFolderPath)) {
+            Files.createDirectories(uploadFolderPath);
+        }
+
+        Path filePath = Paths.get(uploadPath, newProfileImage);
+        try (InputStream inputStream = profileImage.getInputStream()) {
+            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        return newProfileImage;
     }
 }
 

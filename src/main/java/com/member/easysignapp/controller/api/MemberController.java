@@ -16,17 +16,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
-import static com.member.easysignapp.util.FileUtil.generateUniqueFileName;
-import static com.member.easysignapp.util.FileUtil.sanitizeFileName;
-import static com.member.easysignapp.util.FileUtil.getFileExtension;
+import static com.member.easysignapp.util.FileUtil.saveProfileImage;
 
 @RestController
 @RequestMapping("/api")
@@ -131,49 +124,25 @@ public class MemberController {
             @RequestPart(value = "nickname", required = false) String nickname,
             @AuthenticationPrincipal UserDetails userDetails) {
         String uuid = userDetails.getUsername();
-        String uploadedImagePath = null;
-        String uploadedImageName = null;
+        String newProfileImage;
 
         try {
-            // 파일 업로드 처리
-            if (profileImage != null && !profileImage.isEmpty()) {
-                // 파일 이름을 유니크하게 만들어서 저장
-                String originalFileName = profileImage.getOriginalFilename();
-
-                // 파일 이름이 null이 아닌 경우에만 저장을 수행
-                if (originalFileName != null && !originalFileName.isEmpty()) {
-                    String sanitizedFileName = sanitizeFileName(originalFileName);
-                    String fileExtension = getFileExtension(originalFileName);
-                    uploadedImageName = generateUniqueFileName(uuid, sanitizedFileName, fileExtension);
-
-                    Path uploadFolderPath = Paths.get(uploadPath);
-
-                    // 폴더가 없는 경우 생성
-                    if (!Files.exists(uploadFolderPath)) {
-                        Files.createDirectories(uploadFolderPath);
-                    }
-
-                    Path filePath = Paths.get(uploadPath, uploadedImageName);
-
-                    // try-with-resources를 사용하여 InputStream 자동으로 닫기
-                    try (InputStream inputStream = profileImage.getInputStream()) {
-                        // 파일 복사
-                        // 저장은 디렉토리 최상위 /easy/upload/profile/파일명으로 저장
-                        Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-                    }
-                }
-            }
-
-            // 닉네임, 프로필이미지 업데이트
-            // DB는 /profile/파일명으로 저장 외부에서 이미지 호출시 저장된 내부 경로를 숨기기 위함
-            memberService.updateMemberInfo(uuid, nickname, "/profile/" + uploadedImageName);
-
+            newProfileImage = saveProfileImage(profileImage, uuid, uploadPath);
+            memberService.updateMemberInfo(uuid, nickname, newProfileImage);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         Map<String, Object> responseData = new HashMap<>();
-        responseData.put("uploadedImageName", uploadedImageName);
+
+        if (nickname != null) {
+            responseData.put("newNickName", nickname);
+        }
+
+        if (newProfileImage != null) {
+            responseData.put("newProfileImage", "/profile/" + newProfileImage);
+        }
+
 
         String successMessage = messageSourceAccessor.getMessage("member.setUserInfo.success.message");
 
