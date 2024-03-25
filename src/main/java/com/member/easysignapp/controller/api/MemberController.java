@@ -2,6 +2,7 @@ package com.member.easysignapp.controller.api;
 
 import com.member.easysignapp.dto.*;
 import com.member.easysignapp.service.MemberService;
+import com.member.easysignapp.util.CheckSumUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -74,15 +75,30 @@ public class MemberController {
 
     @PostMapping("/send-email-code")
     public ApiResponse sendMail(HttpServletRequest servletRequest, @RequestBody @Valid EmailRequest emailRequest) {
-        memberService.sendCodeToEmail(emailRequest);
+        String email = emailRequest.getEmail();
+        String checksumFromClient = emailRequest.getCheckSum();
 
-        String successMessage = messageSourceAccessor.getMessage("member.sendMail.success.message");
+        // 클라이언트가 전송한 데이터를 사용하여 체크섬 재생성
+        String calculatedCheckSum = CheckSumUtil.generateCheckSum(email);
 
-        return ApiResponse.builder()
-                .status("success")
-                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg(successMessage)
-                .build();
+        // 클라이언트가 전송한 체크섬과 재생성한 체크섬 비교
+        if (calculatedCheckSum.equals(checksumFromClient)) {
+            memberService.sendCodeToEmail(emailRequest);
+
+            String successMessage = messageSourceAccessor.getMessage("member.sendMail.success.message");
+
+            return ApiResponse.builder()
+                    .status("success")
+                    .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
+                    .msg(successMessage)
+                    .build();
+        } else {
+            // 체크섬이 일치하지 않으면 오류 응답 반환
+            return ApiResponse.builder()
+                    .status("fail")
+                    .msg("Checksum verification failed.")
+                    .build();
+        }
     }
 
     @PostMapping("/email-verification")
@@ -168,4 +184,10 @@ public class MemberController {
                 .data(data)
                 .build();
     }
+
+//    private String generateChecksum(String data) {
+//        // 데이터에 대한 체크섬 생성 로직
+//        // 여기서는 단순히 SHA-256을 사용한 예시입니다. 실제로는 더 강력한 알고리즘을 사용해야 합니다.
+//        return DigestUtils.sha256Hex(data);
+//    }
 }

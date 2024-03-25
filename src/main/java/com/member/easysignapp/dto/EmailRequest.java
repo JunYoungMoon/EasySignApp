@@ -9,4 +9,6 @@ import javax.validation.constraints.NotEmpty;
 @Getter
 @Setter
 public class EmailRequest extends BaseRequest {
+
+    private String checkSum;
 }
