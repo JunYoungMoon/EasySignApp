@@ -53,11 +53,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             handleExpiredJwtException(request, response, token, e);
             return; // 필터 체인 중단
         } catch (JwtException | IllegalArgumentException e) {
-            handleHttpResponse(request, response, "Invalid JWT" , null);
-            return;
+            throw new RuntimeException("Invalid JWT", e);
         } catch (SecurityException e) {
-            handleHttpResponse(request, response,"Forbidden" , null);
-            return;
+            throw new RuntimeException("Forbidden", e);
         }
 
         filterChain.doFilter(request, response);
@@ -81,33 +79,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Access Refresh 토큰 생성후 전달
                 String createdSuccessMessage = messageSourceAccessor.getMessage("jwt.authFilter.createdToken.success.message");
-                handleHttpResponse(request, response, createdSuccessMessage, new ObjectMapper().writeValueAsString(newTokenInfo));
+
+                ApiResponse apiResponse = ApiResponse.builder()
+                        .status("success")
+                        .csrfToken(((CsrfToken) request.getAttribute(CsrfToken.class.getName())).getToken())
+                        .msg(createdSuccessMessage)
+                        .data(new ObjectMapper().writeValueAsString(newTokenInfo))
+                        .build();
+
+                response.setContentType("application/json");
+                response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
             } else {
                 // refresh 토큰 정보가 올바르지 않음
                 String validationFailMessage = messageSourceAccessor.getMessage("jwt.authFilter.validationToken.fail.message");
-                handleHttpResponse(request, response, validationFailMessage ,null);
+
+                throw new RuntimeException(validationFailMessage);
             }
         } else {
-            //access 토큰이 만료되었을때 refresh 토큰 요청
-            //boolean refreshTokenRequired = true;
-            //Map<String, Object> responseData = new HashMap<>();
-            //responseData.put("refreshTokenRequired", refreshTokenRequired);
-
-            String requestRefreshTokenMessage = messageSourceAccessor.getMessage("jwt.authFilter.requestRefreshToken.fail.message");
-
-            handleHttpResponse(request, response, requestRefreshTokenMessage, "refreshTokenRequired");
+            //access 토큰이 만료 되었을 때 refresh 토큰 요청
+            throw new RuntimeException("Please provide a refresh token.");
         }
-    }
-
-    private void handleHttpResponse(HttpServletRequest request, HttpServletResponse response, String message, String data) throws IOException {
-        ApiResponse apiResponse = ApiResponse.builder()
-                .status("success")
-                .csrfToken(((CsrfToken) request.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg(message)
-                .data(data)
-                .build();
-
-        response.setContentType("application/json");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
     }
 }

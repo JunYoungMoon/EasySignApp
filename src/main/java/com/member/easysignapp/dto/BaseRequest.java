@@ -9,7 +9,7 @@ import javax.validation.constraints.NotEmpty;
 @Getter
 @Setter
 public class BaseRequest {
-    @NotEmpty(message = "이메일은 필수 입력 사항 입니다.")
-    @Email(message = "올바른 이메일 형식 이어야 합니다.")
+    @NotEmpty(message = "{baseRequest.NotEmpty.email}") //이메일은 필수 입력 사항입니다.
+    @Email(message = "{baseRequest.Email.email}")   //올바른 이메일 형식이어야 합니다.
     private String email;
 }
