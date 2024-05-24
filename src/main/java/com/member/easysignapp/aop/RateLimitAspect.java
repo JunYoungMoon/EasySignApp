@@ -8,6 +8,12 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
+
+import static com.member.easysignapp.util.WebUtil.getClientIp;
 
 @Aspect
 @Component
@@ -24,7 +30,10 @@ public class RateLimitAspect {
 
     @Around("@annotation(rateLimit)")
     public Object rateLimit(ProceedingJoinPoint joinPoint, RateLimit rateLimit) throws Throwable {
-        String apiKey = rateLimit.key();
+        HttpServletRequest request =
+                ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
+        String apiKey = rateLimit.key() + "|" + getClientIp(request);
         long limit = rateLimit.limit();
         long period = rateLimit.period();
 

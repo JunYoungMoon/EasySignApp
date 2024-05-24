@@ -1,5 +1,6 @@
 package com.member.easysignapp.controller.api;
 
+import com.member.easysignapp.annotation.RateLimit;
 import com.member.easysignapp.dto.*;
 import com.member.easysignapp.service.MemberService;
 import com.member.easysignapp.util.CheckSumUtil;
@@ -74,6 +75,7 @@ public class MemberController {
     }
 
     @PostMapping("/send-email-code")
+    @RateLimit(key = "sendMail", limit = 2, period = 300000)
     public ApiResponse sendMail(HttpServletRequest servletRequest, @RequestBody @Valid EmailRequest emailRequest) {
         String email = emailRequest.getEmail();
         String checksumFromClient = emailRequest.getCheckSum();
@@ -184,6 +186,19 @@ public class MemberController {
                 .data(data)
                 .build();
     }
+
+    // HttpServletRequest를 사용하여 IP 주소 가져오는 메서드
+    private String getClientIp(HttpServletRequest request) {
+        String remoteAddr = "";
+        if (request != null) {
+            remoteAddr = request.getHeader("X-FORWARDED-FOR");
+            if (remoteAddr == null || "".equals(remoteAddr)) {
+                remoteAddr = request.getRemoteAddr();
+            }
+        }
+        return remoteAddr;
+    }
+
 
 //    private String generateChecksum(String data) {
 //        // 데이터에 대한 체크섬 생성 로직

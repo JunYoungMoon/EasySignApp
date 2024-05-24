@@ -169,7 +169,6 @@ public class MemberService {
         }
     }
 
-    @RateLimit(key = "sendEmailPoint", limit = 2, period = 300000)
     public void sendCodeToEmail(EmailRequest emailRequest) {
         checkDuplicatedEmail(emailRequest.getEmail());
         String title = messageSourceAccessor.getMessage("email.title.message", new Object[]{"Easy Sign App"});
