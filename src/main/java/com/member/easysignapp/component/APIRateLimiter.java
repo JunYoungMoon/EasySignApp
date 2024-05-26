@@ -27,6 +27,7 @@ public class APIRateLimiter {
     public APIRateLimiter(RedisClient redisClient) {
         StatefulRedisConnection<String, byte[]> connection = redisClient.connect(RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE));
         // redis
+        // 만료 전략 포함은 설정하여도 period가 적용된다.
         this.proxyManager = LettuceBasedProxyManager.builderFor(connection)
                 .withExpirationStrategy(ExpirationAfterWriteStrategy.basedOnTimeForRefillingBucketUpToMax(Duration.ofSeconds(10)))
                 .build();
