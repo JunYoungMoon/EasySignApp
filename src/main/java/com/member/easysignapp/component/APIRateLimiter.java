@@ -15,6 +15,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -23,19 +26,25 @@ import java.util.concurrent.ConcurrentMap;
 public class APIRateLimiter {
     private final LettuceBasedProxyManager<String> proxyManager;
     private final ConcurrentMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final Map<String, LocalDateTime> lastAccessTimes = new ConcurrentHashMap<>();
+    private final Duration unusedExpirationDuration = Duration.ofMinutes(30); // 사용되지 않는 API 키의 만료 기간 설정
 
     public APIRateLimiter(RedisClient redisClient) {
         StatefulRedisConnection<String, byte[]> connection = redisClient.connect(RedisCodec.of(StringCodec.UTF8, ByteArrayCodec.INSTANCE));
         // redis
-        // 만료 전략 포함은 설정하여도 period가 적용된다.
         this.proxyManager = LettuceBasedProxyManager.builderFor(connection)
                 .withExpirationStrategy(ExpirationAfterWriteStrategy.basedOnTimeForRefillingBucketUpToMax(Duration.ofSeconds(10)))
                 .build();
     }
 
     private Bucket getOrCreateBucket(String apiKey, long limit, long period) {
+        lastAccessTimes.put(apiKey, LocalDateTime.now()); // API 호출 시간 기록
+
+        //부재시 계산
         return buckets.computeIfAbsent(apiKey, key -> {
+            //버킷 설정 생성
             BucketConfiguration configuration = createBucketConfiguration(limit, period);
+            //설정을 토대로 버킷 생성
             return proxyManager.builder().build(key, configuration);
         });
     }
@@ -46,10 +55,34 @@ public class APIRateLimiter {
                 .build();
     }
 
+    // 사용하지 않는 API 키에 대한 버킷을 정리
+    private void cleanUpUnusedApiKeys() {
+        LocalDateTime now = LocalDateTime.now();
+        Set<String> unusedKeys = new HashSet<>();
+
+        for (Map.Entry<String, LocalDateTime> entry : lastAccessTimes.entrySet()) {
+            String apiKey = entry.getKey();
+            LocalDateTime lastAccessTime = entry.getValue();
+            if (now.minus(unusedExpirationDuration).isAfter(lastAccessTime)) {
+                unusedKeys.add(apiKey);
+            }
+        }
+
+        unusedKeys.forEach(key -> {
+            buckets.remove(key);
+            lastAccessTimes.remove(key);
+        });
+    }
+
     public boolean tryConsume(String apiKey, long limit, long period) {
+        // 사용하지 않는 API 키에 대한 버킷을 정리
+        cleanUpUnusedApiKeys();
+
         Bucket bucket = getOrCreateBucket(apiKey, limit, period);
+        //이시점에서 redis 입력
         boolean consumed = bucket.tryConsume(1);
         log.info("API Key: {}, Consumed: {}, Time: {}", apiKey, consumed, LocalDateTime.now());
+
         return consumed;
     }
 }
