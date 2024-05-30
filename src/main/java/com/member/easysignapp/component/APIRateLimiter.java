@@ -12,7 +12,8 @@ import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.codec.StringCodec;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -20,12 +21,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Component
 public class APIRateLimiter {
     private final LettuceBasedProxyManager<String> proxyManager;
     private final ConcurrentMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+//    private final Cache<String, Bucket> buckets;
+
+//    private static final Duration REFILL_DURATION = Duration.ofSeconds(5);
+//    private static final int REFILL_AMOUNT = 4;
+
     private final Map<String, LocalDateTime> lastAccessTimes = new ConcurrentHashMap<>();
     private final Duration unusedExpirationDuration = Duration.ofMinutes(30); // 사용되지 않는 API 키의 만료 기간 설정
 
@@ -35,9 +42,13 @@ public class APIRateLimiter {
         this.proxyManager = LettuceBasedProxyManager.builderFor(connection)
                 .withExpirationStrategy(ExpirationAfterWriteStrategy.basedOnTimeForRefillingBucketUpToMax(Duration.ofSeconds(10)))
                 .build();
+
+//        this.buckets = CacheBuilder.newBuilder()
+//                .expireAfterAccess(Duration.ofMinutes(10))
+//                .build();
     }
 
-    private Bucket getOrCreateBucket(String apiKey, long limit, long period) {
+    private Bucket getOrCreateBucket(String apiKey, long limit, long period) /*throws ExecutionException*/ {
         lastAccessTimes.put(apiKey, LocalDateTime.now()); // API 호출 시간 기록
 
         //부재시 계산
@@ -47,6 +58,11 @@ public class APIRateLimiter {
             //설정을 토대로 버킷 생성
             return proxyManager.builder().build(key, configuration);
         });
+
+//        return buckets.get(apiKey, () -> {
+//            BucketConfiguration configuration = createBucketConfiguration(limit, period);
+//            return proxyManager.builder().build(apiKey, configuration);
+//        });
     }
 
     private BucketConfiguration createBucketConfiguration(long limit, long period) {
@@ -84,5 +100,15 @@ public class APIRateLimiter {
         log.info("API Key: {}, Consumed: {}, Time: {}", apiKey, consumed, LocalDateTime.now());
 
         return consumed;
+
+//        try {
+//            Bucket bucket = getOrCreateBucket(apiKey, limit, period);
+//            boolean consumed = bucket.tryConsume(1);
+//            log.info("API Key: {}, Consumed: {}, Time: {}", apiKey, consumed, java.time.LocalDateTime.now());
+//            return consumed;
+//        } catch (ExecutionException e) {
+//            log.error("Error getting or creating bucket for API key: " + apiKey, e);
+//            return false;
+//        }
     }
 }
