@@ -37,6 +37,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'com.bucket4j:bucket4j-redis:8.7.0'
     implementation 'com.google.guava:guava:33.2.0-jre'
+    implementation 'io.springfox:springfox-boot-starter:3.0.0'
 //    runtimeOnly 'com.h2database:h2'
     runtimeOnly 'mysql:mysql-connector-java:8.0.30'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

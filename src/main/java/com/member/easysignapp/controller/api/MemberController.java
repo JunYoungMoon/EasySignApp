@@ -75,7 +75,7 @@ public class MemberController {
     }
 
     @PostMapping("/send-email-code")
-    @RateLimit(key = "sendMail", limit = 2, period = 300000)
+    @RateLimit(key = "sendMail", limit = 2, period = 60000)
     public ApiResponse sendMail(HttpServletRequest servletRequest, @RequestBody @Valid EmailRequest emailRequest) {
         String email = emailRequest.getEmail();
         String checksumFromClient = emailRequest.getCheckSum();
