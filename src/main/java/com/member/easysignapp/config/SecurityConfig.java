@@ -36,9 +36,13 @@ public class SecurityConfig {
             "/login/**",
             "/oauth2/**",
             "/profile/**",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**"
     };
 
-    //요청 권한 허용 패턴
     String[] authPatterns = new String[] {
             "/api/signup",
             "/api/send-email-code",
@@ -51,6 +55,11 @@ public class SecurityConfig {
             "/oauth2/**",
             "/api/check-auth",
             "/profile/**",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**"
     };
 
     @Bean

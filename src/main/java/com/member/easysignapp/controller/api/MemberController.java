@@ -187,19 +187,6 @@ public class MemberController {
                 .build();
     }
 
-    // HttpServletRequest를 사용하여 IP 주소 가져오는 메서드
-    private String getClientIp(HttpServletRequest request) {
-        String remoteAddr = "";
-        if (request != null) {
-            remoteAddr = request.getHeader("X-FORWARDED-FOR");
-            if (remoteAddr == null || "".equals(remoteAddr)) {
-                remoteAddr = request.getRemoteAddr();
-            }
-        }
-        return remoteAddr;
-    }
-
-
 //    private String generateChecksum(String data) {
 //        // 데이터에 대한 체크섬 생성 로직
 //        // 여기서는 단순히 SHA-256을 사용한 예시입니다. 실제로는 더 강력한 알고리즘을 사용해야 합니다.

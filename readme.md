@@ -5,7 +5,9 @@
     * [jwt 방식 추가완료]
     * [이메일 인증 추가완료]
     * [Rate Limit 추가완료]
-    * [Replication DB 추가중]
+    * [Replication DB 추가완료]
+    * [OAuth2 추가완료]
+    * [다중언어 추가완료]
 <!-- TOC -->
 
 ## JWT 방식
