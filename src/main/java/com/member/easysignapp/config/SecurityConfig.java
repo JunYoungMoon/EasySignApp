@@ -6,9 +6,8 @@ import com.member.easysignapp.handler.OAuth2LoginSuccessHandler;
 import com.member.easysignapp.security.JwtAuthenticationFilter;
 import com.member.easysignapp.security.JwtTokenProvider;
 import com.member.easysignapp.service.CustomOAuth2UserService;
-import com.member.easysignapp.util.WebUtil;
+import com.member.easysignapp.util.CommonUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -79,7 +78,7 @@ public class SecurityConfig {
                 .headers(headers ->
                         headers.contentSecurityPolicy("script-src 'self'"))
                 .csrf()
-                .requireCsrfProtectionMatcher(request -> !WebUtil.isMobile(request))
+                .requireCsrfProtectionMatcher(request -> !CommonUtil.isMobile(request))
                 .ignoringAntMatchers(csrfPatterns)
                 .csrfTokenRepository(csrfTokenRepository())
                 .and()

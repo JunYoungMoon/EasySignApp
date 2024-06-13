@@ -12,7 +12,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static com.member.easysignapp.util.WebUtil.getClientIp;
+import static com.member.easysignapp.util.CommonUtil.getClientIp;
 
 @Aspect
 @Component

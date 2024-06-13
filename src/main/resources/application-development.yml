@@ -133,15 +133,15 @@ jwt:
 
 client:
   app:
-    url: http://127.0.0.1:3000
+    url: http://localhost:3000
 
 cors:
   allow:
-    url: http://127.0.0.1:3000
+    url: http://localhost:3000
 
 server:
   app:
-    url: http://127.0.0.1:8080
+    url: http://localhost:8080
 
 upload:
   profile:
