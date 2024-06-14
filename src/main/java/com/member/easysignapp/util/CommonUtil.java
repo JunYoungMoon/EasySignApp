@@ -1,6 +1,6 @@
 package com.member.easysignapp.util;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class CommonUtil {
     // 모바일인지 체크하는 메서드

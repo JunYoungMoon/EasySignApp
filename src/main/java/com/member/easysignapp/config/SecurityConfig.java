@@ -76,8 +76,7 @@ public class SecurityConfig {
         //CSP로 XSS 공격을 방지 및 csrf 검증 모바일일때 제외
         http
                 .headers(headers ->
-                        headers.contentSecurityPolicy("script-src 'self'"))
-                .csrf()
+                        headers.contentSecurityPolicy("script-src 'self'")).csrf()
                 .requireCsrfProtectionMatcher(request -> !CommonUtil.isMobile(request))
                 .ignoringAntMatchers(csrfPatterns)
                 .csrfTokenRepository(csrfTokenRepository())
