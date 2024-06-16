@@ -8,6 +8,7 @@ import com.member.easysignapp.security.JwtTokenProvider;
 import com.member.easysignapp.service.CustomOAuth2UserService;
 import com.member.easysignapp.util.CommonUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -18,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +30,8 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
     private final MessageSourceAccessor messageSourceAccessor;
+    private final CorsConfigurationSource corsConfigurationSource;
+
 
     //TODO csrf 허용 패턴 추가 필요
     String[] csrfPatterns = new String[] {
@@ -75,15 +79,28 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         //CSP로 XSS 공격을 방지 및 csrf 검증 모바일일때 제외
         http
-                .headers(headers ->
-                        headers.contentSecurityPolicy("script-src 'self'")).csrf()
-                .requireCsrfProtectionMatcher(request -> !CommonUtil.isMobile(request))
-                .ignoringAntMatchers(csrfPatterns)
-                .csrfTokenRepository(csrfTokenRepository())
-                .and()
-                .cors()
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("script-src 'self'")
+                        )
+                )
+//                .headers(headers ->
+//                        headers.contentSecurityPolicy("script-src 'self'"))
+//                .csrf()
+                .csrf((csrf) -> csrf
+                        .requireCsrfProtectionMatcher(request -> !CommonUtil.isMobile(request))
+                        .ignoringRequestMatchers(csrfPatterns)
+                        .csrfTokenRepository(csrfTokenRepository()))
+//                .requireCsrfProtectionMatcher(request -> !CommonUtil.isMobile(request))
+//                .ignoringAntMatchers(csrfPatterns)
+//                .csrfTokenRepository(csrfTokenRepository())
+//                .and()
+//                .cors()
+                .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                );
+//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         //jwt filter 설정
         http
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, messageSourceAccessor), UsernamePasswordAuthenticationFilter.class);
