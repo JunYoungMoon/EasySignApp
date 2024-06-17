@@ -34,7 +34,7 @@ public class SecurityConfig {
 
 
     //TODO csrf 허용 패턴 추가 필요
-    String[] csrfPatterns = new String[] {
+    String[] csrfPatterns = new String[]{
             "/api/getcsrf",
             "/login/**",
             "/oauth2/**",
@@ -46,7 +46,7 @@ public class SecurityConfig {
             "/webjars/**"
     };
 
-    String[] authPatterns = new String[] {
+    String[] authPatterns = new String[]{
             "/api/signup",
             "/api/send-email-code",
             "/api/email-verification",
@@ -106,20 +106,32 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, messageSourceAccessor), UsernamePasswordAuthenticationFilter.class);
         //요청에 대한 권한 설정
         http
-                .authorizeRequests()
-                .antMatchers(authPatterns).permitAll()
-                .anyRequest().authenticated(); // 그 외의 URL은 인증된 사용자만 접근 가능
+                .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers(authPatterns).permitAll()
+                        .anyRequest().authenticated()
+                );
+//                .authorizeRequests()
+//                .antMatchers(authPatterns).permitAll()
+//                .anyRequest().authenticated(); // 그 외의 URL은 인증된 사용자만 접근 가능
         //인증 실패시 예외 처리 재정의
         http
-                .exceptionHandling()
-                .authenticationEntryPoint(customAuthenticationEntryPoint());
+                .exceptionHandling((exceptionHandling) -> exceptionHandling
+                        .authenticationEntryPoint(customAuthenticationEntryPoint()));
+//                .exceptionHandling()
+//                .authenticationEntryPoint(customAuthenticationEntryPoint());
         //OAuth 2.0 로그인 설정 시작
         http
-                .oauth2Login()
-                .successHandler(oAuth2LoginSuccessHandler)
-                .failureHandler(oAuth2LoginFailureHandler)
-                .userInfoEndpoint()
-                .userService(customOAuth2UserService);
+                .oauth2Login((oauth2) -> oauth2
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureHandler(oAuth2LoginFailureHandler)
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                );
+//                .oauth2Login()
+//                .successHandler(oAuth2LoginSuccessHandler)
+//                .failureHandler(oAuth2LoginFailureHandler)
+//                .userInfoEndpoint()
+//                .userService(customOAuth2UserService);
 
         //csrf filter 검증 이후 새로운 토큰 발급 필터 설정
         //csrf는 XSRF-TOKEN의 쿠키값과 전달받은 파라미터 _csrf 혹은 헤더 X-XSRF-TOKEN 값과 비교한다.

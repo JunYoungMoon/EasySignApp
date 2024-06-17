@@ -1,6 +1,5 @@
 package com.member.easysignapp.service;
 
-import groovy.util.logging.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +13,6 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Slf4j
 @SpringBootTest
 class RedisServiceTest {
     final String KEY = "key";

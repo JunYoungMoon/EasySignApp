@@ -8,6 +8,7 @@
     * [Replication DB 추가완료]
     * [OAuth2 추가완료]
     * [다중언어 추가완료]
+    * [boot2 > boot3 마이그레이션 완료]
 <!-- TOC -->
 
 ## JWT 방식
