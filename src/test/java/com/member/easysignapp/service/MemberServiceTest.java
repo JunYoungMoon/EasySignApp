@@ -46,7 +46,7 @@ public class MemberServiceTest {
         when(passwordEncoder.encode(request.getPassword())).thenReturn("hashedPassword");
 
         // Act
-        MemberResponse response = memberService.signUp(request);
+        MemberResponse response = memberService.registerUser(request);
 
         // Assert
         // Verify that the memberRepository.save method was called once with the correct arguments

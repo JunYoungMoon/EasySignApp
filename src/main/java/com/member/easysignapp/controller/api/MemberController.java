@@ -24,7 +24,7 @@ import java.util.Map;
 import static com.member.easysignapp.util.FileUtil.saveProfileImage;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class MemberController {
     @Value("${upload.profile.directory}")
     private String uploadPath;
@@ -38,15 +38,15 @@ public class MemberController {
         this.messageSourceAccessor = messageSourceAccessor;
     }
 
-    @PostMapping("/signup")
-    public ApiResponse signUp(HttpServletRequest servletRequest, @RequestBody @Valid MemberRequest memberRequest) {
-        String successMessage = messageSourceAccessor.getMessage("member.signUp.success.message");
+    @PostMapping
+    public ApiResponse registerUser(HttpServletRequest servletRequest, @RequestBody @Valid MemberRequest memberRequest) {
+        String successMessage = messageSourceAccessor.getMessage("member.registerUser.success.message");
 
         return ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
                 .msg(successMessage)
-                .data(memberService.signUp(memberRequest))
+                .data(memberService.registerUser(memberRequest))
                 .build();
     }
 

@@ -48,10 +48,9 @@ enforce-gtid-consistency=true
 `GRANT REPLICATION SLAVE ON *.* TO 'replication_user'@'%';`
 
 특정 스키마만 적용하고 싶다면 아래의 내용으로 추가   
-`GRANT SELECT ON specific_schema.* TO 'replication_user'@'%';`   
+`GRANT SELECT ON specific_schema.* TO 'replication_user'@'%';`     
 `FLUSH PRIVILEGES;`   
 `FLUSH TABLES WITH READ LOCK;`
-
 `SHOW MASTER STATUS;`  
 File : mysql-bin.000001 (이진 로그 파일. 변경 사항이 로그되는 바이너리 형식의 파일로, 데이터베이스의 변경 내용을 기록)        
 Position : 123 (이진 로그 파일에서의 마지막 로그 항목의 위치를 나타낸다.)
@@ -76,13 +75,17 @@ MASTER_AUTO_POSITION=1;`
 #### 1.mysqldump 
 `sudo docker exec jun-mysql-master-1 mysqldump -h localhost -P 13306 -uroot -p1234 --single-transaction --all-databases --triggers --routines --events > backup.sql`
 
-#### 2.특정 GTID 제거
-에러 원인 및 GTID 파악
-1. `SELECT * FROM performance_schema.replication_applier_status_by_worker;`
-2. `SHOW SLAVE STATUS;`
+#### 2.특정 GTID 파악 및 제거
+`SELECT * FROM performance_schema.replication_applier_status_by_worker;`  
+`SHOW SLAVE STATUS;`
+`STOP SLAVE;`  
+`SET GLOBAL GTID_PURGED="ddac1846-bb1b-11ee-a439-0242ac120002:9";`  
+`START SLAVE;`  
 
-특정 GTID 제거
-1. `STOP SLAVE;`  
-2. `SET GLOBAL GTID_PURGED="ddac1846-bb1b-11ee-a439-0242ac120002:9";`
-3. `START SLAVE;`
-
+#### 3. MASTER_AUTO_POSITION 꼬였을때 수동 설정
+`SHOW MASTER STATUS;`  
+`STOP SLAVE;`  
+`CHANGE MASTER TO`    
+`MASTER_LOG_FILE='mysql-bin.000021',`  
+`MASTER_LOG_POS=7098129;`  
+`STOP SLAVE;`  

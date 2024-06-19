@@ -41,7 +41,7 @@ public class MemberService {
     private long authCodeExpirationMillis;
 
 //    @Transactional(transactionManager = "masterTransactionManager")
-    public MemberResponse signUp(MemberRequest request) {
+    public MemberResponse registerUser(MemberRequest request) {
         // 이메일 중복 체크
         if (slaveMemberRepository.existsByEmail(request.getEmail())) {
             String failMessage = messageSourceAccessor.getMessage("member.alreadyEmail.fail.message");
