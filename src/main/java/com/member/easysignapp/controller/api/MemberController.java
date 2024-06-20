@@ -135,7 +135,7 @@ public class MemberController {
                 .build();
     }
 
-    @PostMapping("/set-user-info")
+    @PostMapping("/me")
     public ApiResponse setUserInfo(
             HttpServletRequest servletRequest,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
