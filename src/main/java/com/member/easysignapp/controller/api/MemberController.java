@@ -1,9 +1,7 @@
 package com.member.easysignapp.controller.api;
 
-import com.member.easysignapp.annotation.RateLimit;
 import com.member.easysignapp.dto.*;
 import com.member.easysignapp.service.MemberService;
-import com.member.easysignapp.util.CheckSumUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -74,49 +72,7 @@ public class MemberController {
                 .build();
     }
 
-    @PostMapping("/send-email-code")
-    @RateLimit(key = "sendMail", limit = 2, period = 60000)
-    public ApiResponse sendMail(HttpServletRequest servletRequest, @RequestBody @Valid EmailRequest emailRequest) {
-        String email = emailRequest.getEmail();
-        String checksumFromClient = emailRequest.getCheckSum();
-
-        // 클라이언트가 전송한 데이터를 사용하여 체크섬 재생성
-        String calculatedCheckSum = CheckSumUtil.generateCheckSum(email);
-
-        // 클라이언트가 전송한 체크섬과 재생성한 체크섬 비교
-        if (calculatedCheckSum.equals(checksumFromClient)) {
-            memberService.sendCodeToEmail(emailRequest);
-
-            String successMessage = messageSourceAccessor.getMessage("member.sendMail.success.message");
-
-            return ApiResponse.builder()
-                    .status("success")
-                    .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                    .msg(successMessage)
-                    .build();
-        } else {
-            // 체크섬이 일치하지 않으면 오류 응답 반환
-            return ApiResponse.builder()
-                    .status("fail")
-                    .msg("Checksum verification failed.")
-                    .build();
-        }
-    }
-
-    @PostMapping("/email-verification")
-    public ApiResponse verificationEmail(HttpServletRequest servletRequest, @RequestBody @Valid EmailVerificationRequest emailVerificationRequest) {
-        memberService.verifiedCode(emailVerificationRequest);
-
-        String successMessage = messageSourceAccessor.getMessage("member.verificationEmail.success.message");
-
-        return ApiResponse.builder()
-                .status("success")
-                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
-                .msg(successMessage)
-                .build();
-    }
-
-    @PostMapping("/user-info")
+    @GetMapping("/me")
     public ApiResponse getUserInfo(HttpServletRequest servletRequest) {
         // 현재 사용자의 인증 객체 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -135,7 +91,7 @@ public class MemberController {
                 .build();
     }
 
-    @PostMapping("/me")
+    @PutMapping("/me")
     public ApiResponse setUserInfo(
             HttpServletRequest servletRequest,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
@@ -161,7 +117,6 @@ public class MemberController {
             responseData.put("newProfileImage", "/profile/" + newProfileImage);
         }
 
-
         String successMessage = messageSourceAccessor.getMessage("member.setUserInfo.success.message");
 
         return ApiResponse.builder()
@@ -186,10 +141,4 @@ public class MemberController {
                 .data(data)
                 .build();
     }
-
-//    private String generateChecksum(String data) {
-//        // 데이터에 대한 체크섬 생성 로직
-//        // 여기서는 단순히 SHA-256을 사용한 예시입니다. 실제로는 더 강력한 알고리즘을 사용해야 합니다.
-//        return DigestUtils.sha256Hex(data);
-//    }
 }

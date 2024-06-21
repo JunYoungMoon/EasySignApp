@@ -30,8 +30,9 @@ public class SecurityConfig {
     private final MessageSourceAccessor messageSourceAccessor;
     private final CorsConfigurationSource corsConfigurationSource;
 
+    //csrf를 허용할 패턴
     String[] csrfPatterns = new String[]{
-            "/api/getcsrf",
+            "/api/csrf",
             "/login/**",
             "/oauth2/**",
             "/profile/**",
@@ -42,17 +43,17 @@ public class SecurityConfig {
             "/webjars/**"
     };
 
+    //사용자 인증을 허용할 패턴
     String[] authPatterns = new String[]{
+            "/api/csrf",
             "/api/users",
-            "/api/send-email-code",
-            "/api/email-verification",
-            "/api/login",
-            "/api/user-info",
-            "/api/getcsrf",
+            "/api/mail/send",
+            "/api/mail/verify",
+            "/api/users/login",
+            "/api/check-auth",
             "/api/test",
             "/login/**",
             "/oauth2/**",
-            "/api/check-auth",
             "/profile/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
