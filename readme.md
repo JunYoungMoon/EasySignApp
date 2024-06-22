@@ -73,7 +73,36 @@ MASTER_AUTO_POSITION=1;`
 
 ### 동기화 에러시 백업 복구 방법
 #### 1.mysqldump 
-`sudo docker exec jun-mysql-master-1 mysqldump -h localhost -P 13306 -uroot -p1234 --single-transaction --all-databases --triggers --routines --events > backup.sql`
+- Slave 에서  
+`STOP SLAVE;`  
+`RESET MASTER;`  
+`RESET SLAVE ALL;`  
+
+- 마스터 컨테이너에서 데이터베이스 덤프  
+`docker exec -it jun-mysql-master-1 bash`  
+`mysqldump -u root -p --all-databases --master-data > /tmp/master_backup.sql`  
+`exit`
+
+- 마스터 컨테이너에서 덤프 파일을 로컬로 복사  
+`docker cp jun-mysql-master-1:/tmp/master_backup.sql ./master_backup.sql`  
+
+- 로컬에서 슬레이브 컨테이너로 덤프 파일 복사  
+`docker cp ./master_backup.sql jun-mysql-slave-1:/tmp/master_backup.sql`  
+
+- 슬레이브 컨테이너에서 데이터베이스 복원  
+`docker exec -it jun-mysql-slave-1 bash`  
+`mysql -u root -p < /tmp/master_backup.sql`  
+`exit`  
+- 슬레이브 설정 재구성  
+`CHANGE MASTER TO`  
+`MASTER_HOST='mysql-master',`    
+`MASTER_PORT=3306,`    
+`MASTER_USER='replication_user',`  
+`MASTER_PASSWORD='replication_password',`  
+`MASTER_AUTO_POSITION=1;`  
+`START SLAVE;`  
+`SHOW SLAVE STATUS;`  
+
 
 #### 2.특정 GTID 파악 및 제거
 `SELECT * FROM performance_schema.replication_applier_status_by_worker;`  
