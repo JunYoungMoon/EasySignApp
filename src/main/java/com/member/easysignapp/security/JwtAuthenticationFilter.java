@@ -3,6 +3,7 @@ package com.member.easysignapp.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.member.easysignapp.dto.ApiResponse;
 import com.member.easysignapp.dto.TokenInfo;
+import com.member.easysignapp.util.CommonUtil;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -44,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 2. 토큰 유효성 검사
                 jwtTokenProvider.validateToken(token);
                 // 3. 토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext에 저장
-                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                Authentication authentication = jwtTokenProvider.getAuthentication(request, response, token);
                 // 4. 인증 객체 생성 및 보안 컨텍스트에 설정
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
@@ -53,9 +54,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             handleExpiredJwtException(request, response, token, e);
             return; // 필터 체인 중단
         } catch (JwtException | IllegalArgumentException e) {
-            throw new RuntimeException("Invalid JWT", e);
+            CommonUtil.handleException(request, response, "Invalid JWT");
         } catch (SecurityException e) {
-            throw new RuntimeException("Forbidden", e);
+            CommonUtil.handleException(request, response, "Forbidden");
         }
 
         filterChain.doFilter(request, response);
@@ -72,18 +73,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (isRefreshTokenValid) {
                 // Refresh 토큰으로부터 유저 정보 및 권한 추출
-                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                Authentication authentication = jwtTokenProvider.getAuthentication(request, response, token);
 
                 // 새로운 액세스 토큰 발급 및 리턴
                 TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
 
                 // Access Refresh 토큰 생성후 전달
-                String createdSuccessMessage = messageSourceAccessor.getMessage("jwt.authFilter.createdToken.success.message");
-
                 ApiResponse apiResponse = ApiResponse.builder()
                         .status("success")
                         .csrfToken(((CsrfToken) request.getAttribute(CsrfToken.class.getName())).getToken())
-                        .msg(createdSuccessMessage)
+                        .msg("A new token has been created.")
                         .data(new ObjectMapper().writeValueAsString(newTokenInfo))
                         .build();
 
@@ -91,13 +90,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
             } else {
                 // refresh 토큰 정보가 올바르지 않음
-                String validationFailMessage = messageSourceAccessor.getMessage("jwt.authFilter.validationToken.fail.message");
-
-                throw new RuntimeException(validationFailMessage);
+                CommonUtil.handleException(request, response, "Validation failed with the corresponding refresh token.");
             }
         } else {
             //access 토큰이 만료 되었을 때 refresh 토큰 요청
-            throw new RuntimeException("Please provide a refresh token.");
+            CommonUtil.handleException(request, response, "Please provide a refresh token.");
         }
     }
 }

@@ -38,7 +38,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse> handleException(HttpServletRequest servletRequest, Exception ex) {
-
         ApiResponse response = ApiResponse.builder()
                 .status("fail")
                 .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())

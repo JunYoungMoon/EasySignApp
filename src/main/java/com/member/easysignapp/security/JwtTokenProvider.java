@@ -4,9 +4,12 @@ import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.dto.TokenInfo;
 import com.member.easysignapp.repository.slave.SlaveMemberRepository;
 import com.member.easysignapp.service.RedisService;
+import com.member.easysignapp.util.CommonUtil;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -17,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.io.IOException;
 import java.security.Key;
 import java.time.Duration;
 import java.util.*;
@@ -32,14 +36,12 @@ public class JwtTokenProvider {
     private final Key key;
     private final SlaveMemberRepository slaveMemberRepository;
     private final RedisService redisService;
-    private final MessageSourceAccessor messageSourceAccessor;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, SlaveMemberRepository slaveMemberRepository, RedisService redisService, MessageSourceAccessor messageSourceAccessor) {
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, SlaveMemberRepository slaveMemberRepository, RedisService redisService) {
         this.slaveMemberRepository = slaveMemberRepository;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.redisService = redisService;
-        this.messageSourceAccessor = messageSourceAccessor;
     }
 
     public TokenInfo generateToken(Authentication authentication) {
@@ -80,7 +82,7 @@ public class JwtTokenProvider {
     }
 
     // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
-    public Authentication getAuthentication(String accessToken) {
+    public Authentication getAuthentication(HttpServletRequest request, HttpServletResponse response, String accessToken) throws IOException {
         // 토큰 복호화
         Claims claims = parseClaims(accessToken);
 
@@ -105,15 +107,13 @@ public class JwtTokenProvider {
                 UserDetails principal = new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities);
                 return new UsernamePasswordAuthenticationToken(principal, "", authorities);
             } else {
-                String noUserMessage = messageSourceAccessor.getMessage("jwt.tokenProvider.noUser.message");
-
-                throw new RuntimeException(noUserMessage);
+                CommonUtil.handleException(request, response, "User does not exist.");
+                return null;
             }
         } else {
             if (claims.get("auth") == null) {
-                String noPermissionMessage = messageSourceAccessor.getMessage("jwt.tokenProvider.noPermission.message");
-
-                throw new RuntimeException(noPermissionMessage);
+                CommonUtil.handleException(request, response, "You do not have permission.");
+                return null;
             }
 
             // 클레임에서 권한 정보 가져오기

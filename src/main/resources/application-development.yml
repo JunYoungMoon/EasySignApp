@@ -58,10 +58,8 @@ spring:
         format_sql: true
         show_sql: true
 
-
   redis:
     host: localhost
-    port: 6379
 
   mail:
     host: smtp.gmail.com
@@ -124,12 +122,16 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 jwt:
   secret: ${JWT_SECRET}
   expiration:
-    access: 8640000
-    refresh: 8640000
+    access: 10000
+    refresh: 300000
 
 client:
   app:

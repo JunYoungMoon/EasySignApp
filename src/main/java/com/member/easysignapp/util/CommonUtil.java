@@ -1,6 +1,12 @@
 package com.member.easysignapp.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.member.easysignapp.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.web.csrf.CsrfToken;
+
+import java.io.IOException;
 
 public class CommonUtil {
     // 모바일인지 체크하는 메서드
@@ -19,5 +25,18 @@ public class CommonUtil {
             }
         }
         return remoteAddr;
+    }
+
+    // 에러발생 예외처리 핸들링
+    public static void handleException(HttpServletRequest servletRequest, HttpServletResponse response, String message) throws IOException {
+        response.setContentType("application/json");
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .status("fail")
+                .csrfToken(((CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName())).getToken())
+                .msg(message)
+                .build();
+
+        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
     }
 }
