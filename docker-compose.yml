@@ -29,5 +29,13 @@ services:
     image: redis:latest
     volumes:
       - ./redis-data:/data
+      - ./redis.conf:/etc/redis/redis.conf
     ports:
       - "6379:6379"
+
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - ./mongodb-data:/data/db
+    ports:
+      - "27017:27017"

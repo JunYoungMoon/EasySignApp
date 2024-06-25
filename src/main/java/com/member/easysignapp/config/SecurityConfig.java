@@ -3,9 +3,11 @@ package com.member.easysignapp.config;
 import com.member.easysignapp.exception.CustomAuthenticationEntryPoint;
 import com.member.easysignapp.handler.OAuth2LoginFailureHandler;
 import com.member.easysignapp.handler.OAuth2LoginSuccessHandler;
+import com.member.easysignapp.repository.slave.SlaveMemberRepository;
 import com.member.easysignapp.security.JwtAuthenticationFilter;
 import com.member.easysignapp.security.JwtTokenProvider;
 import com.member.easysignapp.service.CustomOAuth2UserService;
+import com.member.easysignapp.service.MemberService;
 import com.member.easysignapp.util.CommonUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,15 +21,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.csrf.*;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final SlaveMemberRepository slaveMemberRepository;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
-    private final MessageSourceAccessor messageSourceAccessor;
     private final CorsConfigurationSource corsConfigurationSource;
 
     //csrf를 허용할 패턴
@@ -44,7 +49,7 @@ public class SecurityConfig {
     };
 
     //사용자 인증을 허용할 패턴
-    String[] authPatterns = new String[]{
+    List<String> authPatterns = Arrays.asList(
             "/api/csrf",
             "/api/users",
             "/api/mail/send",
@@ -60,7 +65,7 @@ public class SecurityConfig {
             "/swagger-ui.html",
             "/swagger-resources/**",
             "/webjars/**"
-    };
+    );
 
     @Bean
     public CsrfTokenRepository csrfTokenRepository() {
@@ -100,13 +105,13 @@ public class SecurityConfig {
 //                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         //jwt filter 설정
         http
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, messageSourceAccessor), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, authPatterns, slaveMemberRepository), UsernamePasswordAuthenticationFilter.class);
         //요청에 대한 권한 설정
-        http
-                .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers(authPatterns).permitAll()
-                        .anyRequest().authenticated()
-                );
+//        http
+//                .authorizeHttpRequests((authorize) -> authorize
+//                        .requestMatchers(authPatterns).permitAll()
+//                        .anyRequest().authenticated()
+//                );
 //                .authorizeRequests()
 //                .antMatchers(authPatterns).permitAll()
 //                .anyRequest().authenticated(); // 그 외의 URL은 인증된 사용자만 접근 가능

@@ -34,11 +34,9 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration.refresh}")
     private long refreshExpiration;
     private final Key key;
-    private final SlaveMemberRepository slaveMemberRepository;
     private final RedisService redisService;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, SlaveMemberRepository slaveMemberRepository, RedisService redisService) {
-        this.slaveMemberRepository = slaveMemberRepository;
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RedisService redisService) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.redisService = redisService;
@@ -81,61 +79,14 @@ public class JwtTokenProvider {
                 .build();
     }
 
-    // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
-    public Authentication getAuthentication(HttpServletRequest request, HttpServletResponse response, String accessToken) throws IOException {
-        // 토큰 복호화
-        Claims claims = parseClaims(accessToken);
-
-        // tokenType 클레임 값 가져오기
-        String tokenType = claims.get("tokenType", String.class);
-
-        //TODO refresh일때 유저 메일로 권한 정보 가져오기
-        if ("refresh".equals(tokenType)) {
-            // 클레임에서 이메일 정보 가져오기
-            String uuid = claims.getSubject();
-
-            // uuid 기반으로 User 테이블 row 찾기
-            Optional<Member> user = slaveMemberRepository.findByUuid(uuid);
-
-            if (user.isPresent()) {
-                SecurityMember securityMember = new SecurityMember(user.get());
-
-                // member 객체에서 권한 정보 가져오기
-                Collection<? extends GrantedAuthority> authorities = securityMember.getAuthorities();
-
-                // UserDetails 객체를 만들어서 Authentication 리턴
-                UserDetails principal = new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities);
-                return new UsernamePasswordAuthenticationToken(principal, "", authorities);
-            } else {
-                CommonUtil.handleException(request, response, "User does not exist.");
-                return null;
-            }
-        } else {
-            if (claims.get("auth") == null) {
-                CommonUtil.handleException(request, response, "You do not have permission.");
-                return null;
-            }
-
-            // 클레임에서 권한 정보 가져오기
-            Collection<? extends GrantedAuthority> authorities =
-                    Arrays.stream(claims.get("auth").toString().split(","))
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());
-
-            // UserDetails 객체를 만들어서 Authentication 리턴
-            UserDetails principal = new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities);
-            return new UsernamePasswordAuthenticationToken(principal, "", authorities);
-        }
-    }
-
     // 토큰 정보를 검증하는 메서드
     public void validateToken(String token) throws ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, IllegalArgumentException, SecurityException {
         Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
     }
 
-    public Claims parseClaims(String accessToken) {
+    public Claims parseClaims(String token) {
         try {
-            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
+            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }

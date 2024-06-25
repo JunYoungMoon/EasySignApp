@@ -2,30 +2,45 @@ package com.member.easysignapp.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.member.easysignapp.dto.ApiResponse;
+import com.member.easysignapp.dto.MemberInfo;
 import com.member.easysignapp.dto.TokenInfo;
+import com.member.easysignapp.entity.Member;
+import com.member.easysignapp.repository.slave.SlaveMemberRepository;
+import com.member.easysignapp.service.MemberService;
 import com.member.easysignapp.util.CommonUtil;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
 
-@RequiredArgsConstructor
+import java.util.*;
+import java.util.stream.Collectors;
+
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
+    private final List<String> authPatterns;
+    private final SlaveMemberRepository slaveMemberRepository;
 
-    private final MessageSourceAccessor messageSourceAccessor;
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, List<String> authPatterns, SlaveMemberRepository slaveMemberRepository) {
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.authPatterns = authPatterns;
+        this.slaveMemberRepository = slaveMemberRepository;
+    }
 
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
@@ -37,64 +52,91 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 1. Request Header 에서 JWT 토큰 추출
+        if (authPatterns.contains(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = resolveToken(request);
 
         try {
-            if (token != null) {
-                // 2. 토큰 유효성 검사
-                jwtTokenProvider.validateToken(token);
-                // 3. 토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext에 저장
-                Authentication authentication = jwtTokenProvider.getAuthentication(request, response, token);
-                // 4. 인증 객체 생성 및 보안 컨텍스트에 설정
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (token == null || token.isEmpty()) {
+                CommonUtil.handleException(request, response, "JWT does not exist.");
+                return;
+            }
+
+            jwtTokenProvider.validateToken(token);
+            Claims claims = jwtTokenProvider.parseClaims(token);
+            String tokenType = claims.get("tokenType", String.class);
+
+            switch (tokenType) {
+                case "refresh" -> handleRefreshToken(request, response, token, claims);
+                case "access" -> handleAccessToken(request, response, filterChain, claims);
+                default -> CommonUtil.handleException(request, response, "JWT type is incorrect.");
             }
         } catch (ExpiredJwtException e) {
-            // 토큰이 만료된 경우 refreshToken 체크
-            handleExpiredJwtException(request, response, token, e);
-            return; // 필터 체인 중단
+            handleExpiredToken(request, response, e);
         } catch (JwtException | IllegalArgumentException e) {
             CommonUtil.handleException(request, response, "Invalid JWT");
         } catch (SecurityException e) {
             CommonUtil.handleException(request, response, "Forbidden");
         }
+    }
 
+    private void handleRefreshToken(HttpServletRequest request, HttpServletResponse response, String token, Claims claims) throws IOException {
+        if (!jwtTokenProvider.isRefreshTokenValid(token, claims.getSubject())) {
+            CommonUtil.handleException(request, response, "Validation failed with the corresponding refresh token.");
+            return;
+        }
+
+        String uuid = claims.getSubject();
+        Optional<Member> user = slaveMemberRepository.findByUuid(uuid);
+
+        if (user.isEmpty()) {
+            CommonUtil.handleException(request, response, "User information not found.");
+            return;
+        }
+
+        SecurityMember securityMember = new SecurityMember(user.get());
+        Collection<? extends GrantedAuthority> authorities = securityMember.getAuthorities();
+        UserDetails principal = new org.springframework.security.core.userdetails.User(uuid, "", authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, "", authorities);
+        TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .status("success")
+                .csrfToken(((CsrfToken) request.getAttribute(CsrfToken.class.getName())).getToken())
+                .msg("A new token has been created.")
+                .data(new ObjectMapper().writeValueAsString(newTokenInfo))
+                .build();
+
+        response.setContentType("application/json");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
+    }
+
+    private void handleAccessToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, Claims claims) throws ServletException, IOException {
+        if (claims.get("auth") == null) {
+            CommonUtil.handleException(request, response, "You do not have permission.");
+            return;
+        }
+
+        Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("auth").toString().split(","))
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+
+        UserDetails principal = new org.springframework.security.core.userdetails.User(claims.getSubject(), "", authorities);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, "", authorities);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request, response);
     }
 
-    private void handleExpiredJwtException(HttpServletRequest request, HttpServletResponse response, String token, ExpiredJwtException e) throws IOException {
-        // 만료된 토큰이라도 "tokenType"을 추출하여 처리
-        Claims claims = e.getClaims();
-        String tokenType = claims.get("tokenType", String.class);
-
-        if ("refresh".equals(tokenType)) {
-            //refresh 일때는 검증 및 재발행
-            boolean isRefreshTokenValid = jwtTokenProvider.isRefreshTokenValid(token, claims.getSubject());
-
-            if (isRefreshTokenValid) {
-                // Refresh 토큰으로부터 유저 정보 및 권한 추출
-                Authentication authentication = jwtTokenProvider.getAuthentication(request, response, token);
-
-                // 새로운 액세스 토큰 발급 및 리턴
-                TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
-
-                // Access Refresh 토큰 생성후 전달
-                ApiResponse apiResponse = ApiResponse.builder()
-                        .status("success")
-                        .csrfToken(((CsrfToken) request.getAttribute(CsrfToken.class.getName())).getToken())
-                        .msg("A new token has been created.")
-                        .data(new ObjectMapper().writeValueAsString(newTokenInfo))
-                        .build();
-
-                response.setContentType("application/json");
-                response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
-            } else {
-                // refresh 토큰 정보가 올바르지 않음
-                CommonUtil.handleException(request, response, "Validation failed with the corresponding refresh token.");
-            }
-        } else {
-            //access 토큰이 만료 되었을 때 refresh 토큰 요청
+    private void handleExpiredToken(HttpServletRequest request, HttpServletResponse response, ExpiredJwtException e) throws IOException {
+        String tokenType = e.getClaims().get("tokenType", String.class);
+        if ("access".equals(tokenType)) {
             CommonUtil.handleException(request, response, "Please provide a refresh token.");
+        } else {
+            CommonUtil.handleException(request, response, "Refresh token expired.");
         }
     }
 }
