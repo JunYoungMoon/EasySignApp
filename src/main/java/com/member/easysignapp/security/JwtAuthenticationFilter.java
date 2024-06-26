@@ -18,6 +18,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.PathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -52,7 +54,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (authPatterns.contains(request.getRequestURI())) {
+        PathMatcher pathMatcher = new AntPathMatcher();
+
+        if (isAuthPatternMatched(request.getRequestURI(), authPatterns, pathMatcher)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -89,6 +93,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+//        Authentication authentication = createAuthentication(claims);
+
         String uuid = claims.getSubject();
         Optional<Member> user = slaveMemberRepository.findByUuid(uuid);
 
@@ -99,15 +105,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         SecurityMember securityMember = new SecurityMember(user.get());
         Collection<? extends GrantedAuthority> authorities = securityMember.getAuthorities();
+
         UserDetails principal = new org.springframework.security.core.userdetails.User(uuid, "", authorities);
         Authentication authentication = new UsernamePasswordAuthenticationToken(principal, "", authorities);
+
         TokenInfo newTokenInfo = jwtTokenProvider.generateToken(authentication);
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .status("success")
                 .csrfToken(((CsrfToken) request.getAttribute(CsrfToken.class.getName())).getToken())
                 .msg("A new token has been created.")
-                .data(new ObjectMapper().writeValueAsString(newTokenInfo))
+                .data(newTokenInfo)
                 .build();
 
         response.setContentType("application/json");
@@ -138,5 +146,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } else {
             CommonUtil.handleException(request, response, "Refresh token expired.");
         }
+    }
+
+    private boolean isAuthPatternMatched(String requestURI, List<String> authPatterns, PathMatcher pathMatcher) {
+        for (String pattern : authPatterns) {
+            if (pathMatcher.match(pattern, requestURI)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

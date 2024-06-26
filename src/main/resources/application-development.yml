@@ -58,9 +58,6 @@ spring:
         format_sql: true
         show_sql: true
 
-  redis:
-    host: localhost
-
   mail:
     host: smtp.gmail.com
     port: 587
@@ -130,8 +127,8 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration:
-    access: 60000
-    refresh: 120000
+    access: 43200000 #1000 * 60 * 60 * 12(12시간)
+    refresh: 172800000 #1000 * 60 * 60 * 48(48시간)
 
 client:
   app:

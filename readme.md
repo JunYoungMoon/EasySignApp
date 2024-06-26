@@ -15,15 +15,17 @@
 ![img.png](img.png)
 
 ## Docker 설정 방법 
+### Docker 실행
+`service docker start`
 
-### Compose 실행 방법
+### Compose 실행
 docker-compose.yml이 존재하는 곳에서 아래의 명령어 입력   
 `docker-compose up -d`
 
-### Compose 이미지 모두 제거 방법
+### Compose 이미지 모두 제거
 `docker-compose down --volumes --rmi all`
 
-## Master,Slave Replication 설정 방법 
+## Master, Slave Replication 설정 방법 
 
 ### master db (master-my.cnf)
 [mysqld]  
