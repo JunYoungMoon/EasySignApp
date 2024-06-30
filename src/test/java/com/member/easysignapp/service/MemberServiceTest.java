@@ -7,56 +7,97 @@ import com.member.easysignapp.repository.master.MasterMemberRepository;
 import com.member.easysignapp.repository.slave.SlaveMemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
+
+    private static final String EMAIL_VERIFICATION_PREFIX = "EmailVerification ";
 
     @Mock
     private SlaveMemberRepository slaveMemberRepository;
 
     @Mock
+    private MasterMemberRepository masterMemberRepository;
+
+    @Mock
+    private RedisService redisService;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private MessageSourceAccessor messageSourceAccessor;
 
     @InjectMocks
     private MemberService memberService;
 
+    private MemberRequest memberRequest;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        memberRequest = new MemberRequest();
+        memberRequest.setEmail("mooon@naver.com");
+        memberRequest.setPassword("password123!"); // Ensure the password matches the pattern
+        memberRequest.setName("Jun");
+        memberRequest.setRoles(null); // Testing with null roles
     }
 
     @Test
-    void signUp_ValidInput_Success() {
-        // Arrange
-        MemberRequest request = new MemberRequest();
-        request.setPassword("password");
-        request.setEmail("test@example.com");
-        request.setName("Test User");
-        // Add roles to the request if needed
+    void whenEmailAlreadyExists_thenThrowRuntimeException() {
+        // given
+        when(slaveMemberRepository.existsByEmail(memberRequest.getEmail())).thenReturn(true);
+        when(messageSourceAccessor.getMessage("member.alreadyEmail.fail.message")).thenReturn("Email already exists");
 
-        // Mock behavior for repository and passwordEncoder
-        when(slaveMemberRepository.existsByEmail(request.getEmail())).thenReturn(false); // Email doesn't exist
-        when(passwordEncoder.encode(request.getPassword())).thenReturn("hashedPassword");
+        // when & then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> memberService.registerUser(memberRequest));
 
-        // Act
-        MemberResponse response = memberService.registerUser(request);
+        assertEquals("Email already exists", exception.getMessage());
+        verify(slaveMemberRepository, times(1)).existsByEmail(memberRequest.getEmail());
+    }
 
-        // Assert
-        // Verify that the memberRepository.save method was called once with the correct arguments
-        verify(slaveMemberRepository, times(1)).save(any(Member.class));
+    @Test
+    void whenEmailNotVerified_thenThrowRuntimeException() {
+        // given
+        when(slaveMemberRepository.existsByEmail(memberRequest.getEmail())).thenReturn(false);
+        when(redisService.getValues(EMAIL_VERIFICATION_PREFIX + memberRequest.getEmail())).thenReturn("fail");
+        when(redisService.checkExistsValue("fail")).thenReturn(false);
+        when(messageSourceAccessor.getMessage("member.verificationEmail.fail.message")).thenReturn("Email not verified");
 
-        // Add more assertions as needed to verify the response object
-        assertNotNull(response);
-        assertEquals(request.getEmail(), response.getEmail());
-        assertEquals(request.getName(), response.getName());
-        // Add assertions for roles if needed
+        // when & then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            memberService.registerUser(memberRequest);
+        });
+
+        assertEquals("Email not verified", exception.getMessage());
+        verify(redisService, times(1)).getValues(EMAIL_VERIFICATION_PREFIX + memberRequest.getEmail());
+    }
+
+    @Test
+    void whenValidRequest_thenRegisterUserSuccessfully() {
+        // given
+        when(slaveMemberRepository.existsByEmail(memberRequest.getEmail())).thenReturn(false);
+        when(redisService.getValues(EMAIL_VERIFICATION_PREFIX + memberRequest.getEmail())).thenReturn("success");
+        when(redisService.checkExistsValue("success")).thenReturn(true);
+        when(passwordEncoder.encode(memberRequest.getPassword())).thenReturn("hashedPassword123");
+        when(masterMemberRepository.save(any(Member.class))).thenReturn(null); // save method has void return type
+
+        // when
+        MemberResponse response = memberService.registerUser(memberRequest);
+
+        // then
+        assertEquals(memberRequest.getEmail(), response.getEmail());
+        assertEquals(memberRequest.getName(), response.getName());
+        verify(masterMemberRepository, times(1)).save(any(Member.class));
+        verify(redisService, times(1)).deleteValues(EMAIL_VERIFICATION_PREFIX + memberRequest.getEmail());
     }
 
 }

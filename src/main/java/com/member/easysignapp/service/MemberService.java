@@ -1,6 +1,5 @@
 package com.member.easysignapp.service;
 
-import com.member.easysignapp.annotation.RateLimit;
 import com.member.easysignapp.dto.*;
 import com.member.easysignapp.entity.Member;
 import com.member.easysignapp.repository.master.MasterMemberRepository;
@@ -27,11 +26,9 @@ public class MemberService {
     private final MasterMemberRepository masterMemberRepository;
     private final SlaveMemberRepository slaveMemberRepository;
     private final MessageSourceAccessor messageSourceAccessor;
-
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
-    private final MailService mailService;
     private final RedisService redisService;
 
     private static final String AUTH_CODE_PREFIX = "AuthCode ";
