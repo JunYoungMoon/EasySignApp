@@ -13,6 +13,6 @@ permissions:
 
 hooks:
   ApplicationStart:
-    - location: scripts/deploy.sh    # ApplicationStart 단계에서 해당 파일을 실행
+    - location: scripts/deploy.sh    # ApplicationStart 단계에서 해당 파일을 실행.
       timeout: 60
       runas: ubuntu
