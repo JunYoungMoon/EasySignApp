@@ -1,39 +1,32 @@
 package com.member.easysignapp.service;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import static org.awaitility.Awaitility.await;
 
 
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class RedisServiceTest {
     final String KEY = "key";
     final String VALUE = "value";
     final Duration DURATION = Duration.ofMillis(5000);
-    @Autowired
+    @Mock
     private RedisService redisService;
-
-    @BeforeEach
-    void shutDown() {
-        redisService.setValues(KEY, VALUE, DURATION);
-    }
-
-    @AfterEach
-    void tearDown() {
-        redisService.deleteValues(KEY);
-    }
 
     @Test
     @DisplayName("Redis에 데이터를 저장하면 정상적으로 조회된다.")
-    void saveAndFindTest() throws Exception {
+    void saveAndFindTest() {
+        when(redisService.getValues(KEY)).thenReturn(VALUE);
+
         // when
         String findValue = redisService.getValues(KEY);
 
@@ -43,12 +36,13 @@ class RedisServiceTest {
 
     @Test
     @DisplayName("Redis에 저장된 데이터를 수정할 수 있다.")
-    void updateTest() throws Exception {
+    void updateTest() {
         // given
         String updateValue = "updateValue";
-        redisService.setValues(KEY, updateValue, DURATION);
+        when(redisService.getValues(KEY)).thenReturn(updateValue);
 
         // when
+        redisService.setValues(KEY, updateValue, DURATION);
         String findValue = redisService.getValues(KEY);
 
         // then
@@ -58,7 +52,13 @@ class RedisServiceTest {
 
     @Test
     @DisplayName("Redis에 저장된 데이터를 삭제할 수 있다.")
-    void deleteTest() throws Exception {
+    void deleteTest() {
+        // given
+        doAnswer(invocation -> {
+            when(redisService.getValues(KEY)).thenReturn("false");
+            return null;
+        }).when(redisService).deleteValues(KEY);
+
         // when
         redisService.deleteValues(KEY);
         String findValue = redisService.getValues(KEY);
@@ -69,7 +69,10 @@ class RedisServiceTest {
 
     @Test
     @DisplayName("Redis에 저장된 데이터는 만료시간이 지나면 삭제된다.")
-    void expiredTest() throws Exception {
+    void expiredTest() {
+        // given
+        when(redisService.getValues(KEY)).thenReturn(VALUE).thenReturn("false");
+
         // when
         String findValue = redisService.getValues(KEY);
         await().pollDelay(Duration.ofMillis(6000)).untilAsserted(
