@@ -11,10 +11,10 @@
     * [boot 2 > 3 마이그레이션 완료]
 <!-- TOC -->
 
-## JWT 방식
+## JWT 흐름도
 ![jwt 흐름도](images/JWT.png)
 
-## CI/CD 방식
+## CI/CD 흐름도
 ![CI/CD 흐름도](images/CICD.png)
 
 ## Docker 파일 실행
