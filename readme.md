@@ -1,13 +1,13 @@
 # 심플 로그인 프로젝트
 <!-- TOC -->
-    * [xss, csrf 공격방지 추가완료]
-    * [JWT 방식 추가완료]
-    * [CI/CD 방식 추가완료]
-    * [이메일 인증 추가완료]
-    * [Rate Limit 추가완료]
-    * [Replication DB 추가완료]
-    * [OAuth2 추가완료]
-    * [다중언어 추가완료]
+    * [xss, csrf 공격방지 추가]
+    * [JWT 추가]
+    * [CI/CD 추가]
+    * [메일 인증 추가]
+    * [Rate Limit 추가]
+    * [Replication DB 추가]
+    * [OAuth2 추가]
+    * [다중언어 추가]
     * [boot 2 > 3 마이그레이션 완료]
 <!-- TOC -->
 
@@ -78,7 +78,7 @@ MASTER_AUTO_POSITION=1;`
 
 ### 동기화 에러시 백업 복구 방법
 #### 1.mysqldump 
-- Slave 에서  
+- Slave 중단  
 `STOP SLAVE;`  
 `RESET MASTER;`  
 `RESET SLAVE ALL;`  
