@@ -111,7 +111,7 @@ MASTER_AUTO_POSITION=1;`
 
 #### 2.특정 GTID 파악 및 제거
 `SELECT * FROM performance_schema.replication_applier_status_by_worker;`  
-`SHOW SLAVE STATUS;`
+`SHOW SLAVE STATUS;`  
 `STOP SLAVE;`  
 `SET GLOBAL GTID_PURGED="ddac1846-bb1b-11ee-a439-0242ac120002:9";`  
 `START SLAVE;`  
