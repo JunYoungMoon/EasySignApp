@@ -1,18 +1,21 @@
 # 심플 로그인 프로젝트
 <!-- TOC -->
-    * [xss 공격방지 추가완료]
-    * [csrf 공격방지 추가완료]
-    * [jwt 방식 추가완료]
+    * [xss, csrf 공격방지 추가완료]
+    * [JWT 방식 추가완료]
+    * [CI/CD 방식 추가완료]
     * [이메일 인증 추가완료]
     * [Rate Limit 추가완료]
     * [Replication DB 추가완료]
     * [OAuth2 추가완료]
     * [다중언어 추가완료]
-    * [boot2 > boot3 마이그레이션 완료]
+    * [boot 2 > 3 마이그레이션 완료]
 <!-- TOC -->
 
 ## JWT 방식
-![img.png](img.png)
+![jwt 흐름도](images/JWT.png)
+
+## CI/CD 방식
+![CI/CD 흐름도](images/CICD.png)
 
 ## Docker 설정 방법 
 ### Docker 실행
