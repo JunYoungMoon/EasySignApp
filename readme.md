@@ -17,7 +17,7 @@
 ## CI/CD 방식
 ![CI/CD 흐름도](images/CICD.png)
 
-## Docker 설정 방법 
+## Docker 파일 실행
 ### Docker 실행
 `service docker start`
 
