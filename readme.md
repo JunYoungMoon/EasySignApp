@@ -48,7 +48,7 @@ enforce-gtid-consistency=true
 `sudo docker exec -it jun-mysql-master-1 mysql -u root -p`     
 `sudo docker exec -it jun-mysql-slave-1 mysql -u root -p`   
 
-### Master에서 실행
+### Master DB에서 실행
 `CREATE USER 'replication_user'@'%' IDENTIFIED WITH 'mysql_native_password' BY 'replication_password';`   
 `GRANT REPLICATION SLAVE ON *.* TO 'replication_user'@'%';`
 
