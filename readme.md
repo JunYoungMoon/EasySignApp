@@ -88,7 +88,7 @@ MASTER_AUTO_POSITION=1;`
 `mysqldump -u root -p --all-databases --master-data > /tmp/master_backup.sql`  
 `exit`
 
-- 마스터 컨테이너에서 덤프 파일을 로컬로 복사  
+- 덤프 파일을 로컬로 복사  
 `docker cp jun-mysql-master-1:/tmp/master_backup.sql ./master_backup.sql`  
 
 - 로컬에서 슬레이브 컨테이너로 덤프 파일 복사  
