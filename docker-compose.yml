@@ -7,8 +7,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 1234
     volumes:
-      - ./mysql-master-data:/var/lib/mysql
-      - ./master-my.cnf:/etc/mysql/conf.d/master-my.cnf
+      - ./db/mysql-master-data:/var/lib/mysql
+      - ./db/master-my.cnf:/etc/mysql/conf.d/master-my.cnf
     ports:
       - "13306:3306"
 
@@ -20,22 +20,22 @@ services:
     depends_on:
       - mysql-master
     volumes:
-      - ./mysql-slave-data:/var/lib/mysql
-      - ./slave-my.cnf:/etc/mysql/conf.d/slave-my.cnf
+      - ./db/mysql-slave-data:/var/lib/mysql
+      - ./db/slave-my.cnf:/etc/mysql/conf.d/slave-my.cnf
     ports:
       - "14306:3306"
 
   redis:
     image: redis:latest
     volumes:
-      - ./redis-data:/data
-      - ./redis.conf:/etc/redis/redis.conf
+      - ./db/redis-data:/data
+      - ./db/redis.conf:/etc/redis/redis.conf
     ports:
       - "6379:6379"
 
   mongodb:
     image: mongo:latest
     volumes:
-      - ./mongodb-data:/data/db
+      - ./db/mongodb-data:/data/db
     ports:
       - "27017:27017"
