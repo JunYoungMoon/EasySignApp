@@ -8,7 +8,7 @@ services:
       MYSQL_ROOT_PASSWORD: 1234
     volumes:
       - ./db/mysql-master-data:/var/lib/mysql
-      - ./db/master-my.cnf:/etc/mysql/conf.d/master-my.cnf
+      - ./master-my.cnf:/etc/mysql/conf.d/master-my.cnf
     ports:
       - "13306:3306"
 
@@ -21,7 +21,7 @@ services:
       - mysql-master
     volumes:
       - ./db/mysql-slave-data:/var/lib/mysql
-      - ./db/slave-my.cnf:/etc/mysql/conf.d/slave-my.cnf
+      - ./slave-my.cnf:/etc/mysql/conf.d/slave-my.cnf
     ports:
       - "14306:3306"
 
@@ -29,7 +29,7 @@ services:
     image: redis:latest
     volumes:
       - ./db/redis-data:/data
-      - ./db/redis.conf:/etc/redis/redis.conf
+      - ./redis.conf:/etc/redis/redis.conf
     ports:
       - "6379:6379"
 
