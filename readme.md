@@ -31,14 +31,15 @@ docker-compose.yml이 존재하는 곳에서 아래의 명령어 입력
 ## Master, Slave Replication 설정 방법
 
 ### Docker DB 접속
-`sudo docker exec -it jun-mysql-master-1 mysql -u root -p`     
-`sudo docker exec -it jun-mysql-slave-1 mysql -u root -p`   
+Master 컨테이너 접속 : `sudo docker exec -it {Master 컨테이너명} mysql -u root -p`     
+Slave 컨테이너 접속 : `sudo docker exec -it {Slave 컨테이너명} mysql -u root -p`  
+패스워드 : [docker-compose.yml](docker-compose.yml)에서 설정한 "1234"
 
 ### Master DB에서 실행
-`CREATE USER 'replication_user'@'%' IDENTIFIED WITH 'mysql_native_password' BY 'replication_password';`   
-`GRANT REPLICATION SLAVE ON *.* TO 'replication_user'@'%';`
+복제 전용 유저 생성 : `CREATE USER 'replication_user'@'%' IDENTIFIED WITH 'mysql_native_password' BY 'replication_password';`   
+권한 추가 : `GRANT REPLICATION SLAVE ON *.* TO 'replication_user'@'%';`
 
-특정 스키마만 적용하고 싶다면 아래의 내용으로 추가   
+*유저가 아닌 특정 스키마만 적용하고 싶다면 아래의 내용으로 추가   
 `GRANT SELECT ON specific_schema.* TO 'replication_user'@'%';`     
 `FLUSH PRIVILEGES;`   
 `FLUSH TABLES WITH READ LOCK;`
