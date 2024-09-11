@@ -28,21 +28,7 @@ docker-compose.yml이 존재하는 곳에서 아래의 명령어 입력
 ### Compose 이미지 모두 제거
 `docker-compose down --volumes --rmi all`
 
-## Master, Slave Replication 설정 방법 
-
-### master db (master-my.cnf)
-[mysqld]  
-server-id=1  
-log-bin=mysql-bin  
-gtid-mode=ON  
-enforce-gtid-consistency=true
-
-### slave db (slave-my.cnf)
-[mysqld]  
-server-id=2  
-log-bin=mysql-bin  
-gtid-mode=ON  
-enforce-gtid-consistency=true
+## Master, Slave Replication 설정 방법
 
 ### Docker DB 접속
 `sudo docker exec -it jun-mysql-master-1 mysql -u root -p`     
