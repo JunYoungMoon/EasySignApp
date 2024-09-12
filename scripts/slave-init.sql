@@ -1,0 +1,7 @@
+CHANGE MASTER TO
+  MASTER_HOST='mysql-master',
+  MASTER_PORT=3306,
+  MASTER_USER='replication_user',
+  MASTER_PASSWORD='replication_password',
+  MASTER_AUTO_POSITION=1;
+START SLAVE;

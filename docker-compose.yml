@@ -8,9 +8,15 @@ services:
       MYSQL_ROOT_PASSWORD: 1234
     volumes:
       - ./db/mysql-master-data:/var/lib/mysql
-      - ./master-my.cnf:/etc/mysql/conf.d/master-my.cnf
+      - ./config/mysql/master-my.cnf:/etc/mysql/conf.d/master-my.cnf
+      - ./scripts/master-init.sql:/docker-entrypoint-initdb.d/master-init.sql
     ports:
       - "13306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mysql-slave:
     image: mysql:8.0.30
@@ -18,10 +24,12 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 1234
     depends_on:
-      - mysql-master
+      mysql-master:
+        condition: service_healthy
     volumes:
       - ./db/mysql-slave-data:/var/lib/mysql
-      - ./slave-my.cnf:/etc/mysql/conf.d/slave-my.cnf
+      - ./config/mysql/slave-my.cnf:/etc/mysql/conf.d/slave-my.cnf
+      - ./scripts/slave-init.sql:/docker-entrypoint-initdb.d/slave-init.sql
     ports:
       - "14306:3306"
 
@@ -29,7 +37,7 @@ services:
     image: redis:latest
     volumes:
       - ./db/redis-data:/data
-      - ./redis.conf:/etc/redis/redis.conf
+      - ./config/redis/redis.conf:/etc/redis/redis.conf
     ports:
       - "6379:6379"
 
