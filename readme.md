@@ -1,114 +1,69 @@
 # 심플 로그인 프로젝트
-<!-- TOC -->
-    * [xss, csrf 공격방지 추가]
-    * [JWT 추가]
-    * [CI/CD 추가]
-    * [메일 인증 추가]
-    * [Rate Limit 추가]
-    * [Replication DB 추가]
-    * [OAuth2 추가]
-    * [다중언어 추가]
-    * [boot 2 > 3 마이그레이션 완료]
-<!-- TOC -->
+
+**EasySignAppVue**의 백엔드 프로젝트입니다. 이 프로젝트를 기반으로 코인 거래소 기능이 추가될 예정입니다.
+
+---
+
+## 목차
+1. [구현 내용](#구현-내용)
+2. [실행 방법](#실행-방법)
+3. [JWT 흐름도](#jwt-흐름도)
+4. [CI/CD 흐름도](#cicd-흐름도)
+
+---
+
+## 구현 내용
+
+다음 기능들이 프로젝트에 구현되었습니다:
+
+- **XSS, CSRF 공격 방지**: 보안을 위한 필수 요소로 공격 방지 기능이 추가되었습니다.
+- **JWT 추가**: JSON Web Token 기반 인증 구현.
+- **CI/CD 추가**: 지속적인 통합 및 배포 자동화.
+- **메일 인증 추가**: 사용자 등록 시 메일 인증 기능 구현.
+- **Rate Limit 추가**: 요청 속도 제한을 통한 DoS 공격 방지.
+- **Replication DB 추가**: 데이터베이스 이중화(복제) 설정.
+- **OAuth2 추가**: 소셜 로그인 기능 구현.
+- **다중언어 추가**: 글로벌 사용자를 위한 다중 언어 지원.
+- **Spring Boot 2 > 3 마이그레이션 완료**: 최신 버전으로 마이그레이션 완료.
+
+---
+
+## 실행 방법
+
+1. **사전 요구 사항**:
+    - `Docker`, `Docker-Compose`가 설치되어 있어야 합니다.
+
+2. **실행**:
+    - 프로젝트 디렉토리에서 다음 명령어를 실행해 컨테이너를 시작합니다:
+    ```bash
+    docker-compose up -d
+    ```
+
+3. **문제 발생 시**:
+    - 설치 중 문제가 발생하면 다음 명령어로 컴포즈 이미지를 모두 삭제하고 다시 시도하세요:
+    ```bash
+    docker-compose down --volumes --rmi all
+    ```
+
+4. **DB 복제 설정**:
+    - `docker-compose.yml` 파일과 `config`, `scripts` 디렉토리의 설정 파일로 자동으로 DB replication이 진행되도록 설정되어 있습니다.
+
+---
 
 ## JWT 흐름도
-![jwt 흐름도](images/JWT.png)
+
+다음은 **JWT** 인증 흐름을 시각화한 다이어그램입니다:
+
+![JWT 흐름도](images/JWT.png)
+*(JWT 토큰 발급과 인증 처리 과정)*
+
+---
 
 ## CI/CD 흐름도
+
+다음은 **CI/CD** 프로세스를 나타낸 흐름도입니다:
+
 ![CI/CD 흐름도](images/CICD.png)
+*(자동화된 지속적 통합 및 배포 절차)*
 
-## Docker 파일 실행
-### Docker 실행
-`service docker start`
-
-### Compose 실행
-docker-compose.yml이 존재하는 곳에서 아래의 명령어 입력   
-`docker-compose up -d`
-
-### Compose 이미지 모두 제거
-`docker-compose down --volumes --rmi all`
-
-## Master, Slave Replication 설정 방법
-
-### Docker DB 접속
-Master 컨테이너 접속 : `sudo docker exec -it {Master 컨테이너명} mysql -u root -p`     
-Slave 컨테이너 접속 : `sudo docker exec -it {Slave 컨테이너명} mysql -u root -p`  
-패스워드 : [docker-compose.yml](docker-compose.yml)에서 설정한 "1234"
-
-### Master DB에서 실행
-복제 전용 유저 생성 : `CREATE USER 'replication_user'@'%' IDENTIFIED WITH 'mysql_native_password' BY 'replication_password';`   
-권한 추가 : `GRANT REPLICATION SLAVE ON *.* TO 'replication_user'@'%';`
-
-*유저가 아닌 특정 스키마만 적용하고 싶다면 아래의 내용으로 추가   
-`GRANT SELECT ON specific_schema.* TO 'replication_user'@'%';`     
-`FLUSH PRIVILEGES;`   
-`FLUSH TABLES WITH READ LOCK;`
-`SHOW MASTER STATUS;`  
-File : mysql-bin.000001 (이진 로그 파일. 변경 사항이 로그되는 바이너리 형식의 파일로, 데이터베이스의 변경 내용을 기록)        
-Position : 123 (이진 로그 파일에서의 마지막 로그 항목의 위치를 나타낸다.)
-
-### Slave에서 실행
-`CHANGE MASTER TO
-MASTER_HOST='mysql-master',
-MASTER_PORT=3306,
-MASTER_USER='replication_user',
-MASTER_PASSWORD='replication_password',
-MASTER_AUTO_POSITION=1;`
-
-`START SLAVE;`   
-`SHOW SLAVE STATUS;`
-
-### 외부에서 접근할 유저 권한 생성
-`create user '유저명'@'%' identified by '패스워드';`   
-`grant all privileges on 스키마명.* to '유저명'@'%';`   
-`FLUSH PRIVILEGES;`
-
-### 동기화 에러시 백업 복구 방법
-#### 1.mysqldump 
-- Slave 중단  
-`STOP SLAVE;`  
-`RESET MASTER;`  
-`RESET SLAVE ALL;`  
-
-- 마스터 컨테이너에서 데이터베이스 덤프  
-`docker exec -it jun-mysql-master-1 bash`  
-`mysqldump -u root -p --all-databases --master-data > /tmp/master_backup.sql`  
-`exit`
-
-- 덤프 파일을 로컬로 복사  
-`docker cp jun-mysql-master-1:/tmp/master_backup.sql ./master_backup.sql`  
-
-- 로컬에서 슬레이브 컨테이너로 덤프 파일 복사  
-`docker cp ./master_backup.sql jun-mysql-slave-1:/tmp/master_backup.sql`  
-
-- 슬레이브 컨테이너에서 데이터베이스 복원  
-`docker exec -it jun-mysql-slave-1 bash`  
-`mysql -u root -p < /tmp/master_backup.sql`  
-`exit`  
-- 슬레이브 설정 재구성  
-`CHANGE MASTER TO`  
-`MASTER_HOST='mysql-master',`    
-`MASTER_PORT=3306,`    
-`MASTER_USER='replication_user',`  
-`MASTER_PASSWORD='replication_password',`  
-`MASTER_AUTO_POSITION=1;`  
-`START SLAVE;`  
-`SHOW SLAVE STATUS;`  
-
-
-#### 2.특정 GTID 파악 및 제거
-`SELECT * FROM performance_schema.replication_applier_status_by_worker;`  
-`SHOW SLAVE STATUS;`  
-`STOP SLAVE;`  
-`SET GLOBAL GTID_PURGED="ddac1846-bb1b-11ee-a439-0242ac120002:9";`  
-`START SLAVE;`  
-
-#### 3. MASTER_AUTO_POSITION 꼬였을때 수동 설정
-`SHOW MASTER STATUS;`  
-`STOP SLAVE;`  
-`CHANGE MASTER TO`    
-`MASTER_LOG_FILE='mysql-bin.000021',`  
-`MASTER_LOG_POS=7098129;`  
-`START SLAVE;`  
-
-cicd 배포 테스트
+---

@@ -24,4 +24,59 @@ FLUSH TABLES WITH READ LOCK;
 
 -- Master 상태 확인
 -- 현재의 Master 상태를 표시하여 복제에 필요한 이진 로그 파일과 위치를 확인합니다.
-SHOW MASTER STATUS;
+-- SHOW MASTER STATUS;
+-- File : mysql-bin.000001 (이진 로그 파일. 변경 사항이 로그되는 바이너리 형식의 파일로, 데이터베이스의 변경 내용을 기록)
+-- Position : 123 (이진 로그 파일에서의 마지막 로그 항목의 위치를 나타낸다.)
+
+-- 외부에서 접근할 유저 권한 생성
+-- create user '유저명'@'%' identified by '패스워드';
+-- grant all privileges on 스키마명.* to '유저명'@'%';
+-- FLUSH PRIVILEGES;
+
+-- 복제 에러시 백업 복구 방법
+-- 1.mysqldump
+-- Slave 중단
+-- STOP SLAVE;
+-- RESET MASTER;
+-- RESET SLAVE ALL;
+
+-- 마스터 컨테이너에서 데이터베이스 덤프
+-- docker exec -it jun-mysql-master-1 bash
+-- mysqldump -u root -p --all-databases --master-data > /tmp/master_backup.sql
+-- exit
+
+-- 덤프 파일을 로컬로 복사
+-- docker cp jun-mysql-master-1:/tmp/master_backup.sql ./master_backup.sql
+
+-- 로컬에서 슬레이브 컨테이너로 덤프 파일 복사
+-- docker cp ./master_backup.sql jun-mysql-slave-1:/tmp/master_backup.sql
+
+-- 슬레이브 컨테이너에서 데이터베이스 복원
+-- docker exec -it jun-mysql-slave-1 bash
+-- mysql -u root -p < /tmp/master_backup.sql
+-- exit
+
+-- 슬레이브 설정 재구성
+-- CHANGE MASTER TO
+-- MASTER_HOST='mysql-master',
+-- MASTER_PORT=3306,
+-- MASTER_USER='replication_user',
+-- MASTER_PASSWORD='replication_password',
+-- MASTER_AUTO_POSITION=1;
+-- START SLAVE;
+-- SHOW SLAVE STATUS;
+
+-- 2.특정 GTID 파악 및 제거
+-- SELECT * FROM performance_schema.replication_applier_status_by_worker;
+-- SHOW SLAVE STATUS;
+-- STOP SLAVE;
+-- SET GLOBAL GTID_PURGED="ddac1846-bb1b-11ee-a439-0242ac120002:9";
+-- START SLAVE;
+
+-- 3. MASTER_AUTO_POSITION 꼬였을때 수동 설정
+-- SHOW MASTER STATUS;
+-- STOP SLAVE;
+-- CHANGE MASTER TO
+-- MASTER_LOG_FILE='mysql-bin.000021',
+-- MASTER_LOG_POS=7098129;
+-- START SLAVE;

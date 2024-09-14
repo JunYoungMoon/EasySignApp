@@ -33,17 +33,17 @@ spring:
   master:
     datasource:
       hikari:
-        jdbc-url: jdbc:mysql:${MASTER_DB_URL}
-        username: ${EASY_DB_USERNAME}
-        password: ${EASY_DB_PASSWORD}
+        jdbc-url: jdbc:mysql://localhost:13306/EasySignApp
+        username: root
+        password: 1234
       hibernate:
         ddl-auto: update
   slave:
     datasource:
       hikari:
-        jdbc-url: jdbc:mysql:${SLAVE_DB_URL}
-        username: ${EASY_DB_USERNAME}
-        password: ${EASY_DB_PASSWORD}
+        jdbc-url: jdbc:mysql://localhost:14306/EasySignApp
+        username: root
+        password: 1234
 
   #    url: jdbc:h2:tcp://localhost/~/test
   #    driverClassName: org.h2.Driver
@@ -61,8 +61,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${EMAIL_USERNAME}
-    password: ${EMAIL_PASSWORD}
+    username: root #${EMAIL_USERNAME}
+    password: 1234 #${EMAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -125,7 +125,7 @@ spring:
       port: 6379
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: yVKaYUnumwN8sALxPE7Hkae9F/OOJqRZqlaBBcW9vvw= # 32바이트 Base64 인코딩 비밀 키
   expiration:
     access: 43200000 #1000 * 60 * 60 * 12(12시간)
     refresh: 172800000 #1000 * 60 * 60 * 48(48시간)

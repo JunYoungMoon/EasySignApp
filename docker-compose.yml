@@ -49,9 +49,9 @@ services:
     ports:
       - "6379:6379"
 
-  mongodb:
-    image: mongo:latest
-    volumes:
-      - ./db/mongodb-data:/data/db
-    ports:
-      - "27017:27017"
+#  mongodb:
+#    image: mongo:latest
+#    volumes:
+#      - ./db/mongodb-data:/data/db
+#    ports:
+#      - "27017:27017"
