@@ -1,6 +1,5 @@
 package com.member.easysignapp.controller.api;
 
-import com.member.easysignapp.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +34,7 @@ public class ProfileController {
         this.messageSourceAccessor = messageSourceAccessor;
     }
 
+    @Operation(summary = "프로필 이미지 업로드", description = "프로필 이미지를 업로드 합니다.")
     @GetMapping("/{fileName:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String fileName) {
         // 외부 디렉터리 경로 설정

@@ -7,6 +7,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -20,6 +21,7 @@ public class CsrfController {
         this.messageSourceAccessor = messageSourceAccessor;
     }
 
+    @Operation(summary = "CSRF 토큰 얻기", description = "CSRF 토큰을 얻습니다.")
     @GetMapping
     public ApiResponse getCsrfToken(HttpServletRequest servletRequest) {
         CsrfToken csrfToken = (CsrfToken) servletRequest.getAttribute(CsrfToken.class.getName());

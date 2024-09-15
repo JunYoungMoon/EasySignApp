@@ -47,6 +47,10 @@
 
 4. **DB 복제 설정**:
     - `docker-compose.yml` 파일과 `config`, `scripts` 디렉토리의 설정 파일로 자동으로 DB replication이 진행되도록 설정되어 있습니다.
+    ```
+   
+5. **swagger 접속**:
+   - http://localhost:8080/swagger-ui/index.html 주소를 통해 구현 API를 확인할 수 있습니다.
 
 ---
 

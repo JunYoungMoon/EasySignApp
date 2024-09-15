@@ -6,6 +6,7 @@ import com.member.easysignapp.dto.EmailRequest;
 import com.member.easysignapp.dto.EmailVerificationRequest;
 import com.member.easysignapp.service.MemberService;
 import com.member.easysignapp.util.CheckSumUtil;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ public class MailController {
         this.messageSourceAccessor = messageSourceAccessor;
     }
 
+    @Operation(summary = "메일 전송", description = "메일을 전송합니다.")
     @PostMapping("/send")
     @RateLimit(key = "sendMail", limit = 2, period = 60000)
     public ApiResponse sendMail(HttpServletRequest servletRequest, @RequestBody @Valid EmailRequest emailRequest) {
@@ -55,6 +57,7 @@ public class MailController {
         }
     }
 
+    @Operation(summary = "메일 인증 코드 검증", description = "발송한 메일의 인증코드를 검증합니다.")
     @PostMapping("/verify")
     public ApiResponse verificationEmail(HttpServletRequest servletRequest, @RequestBody @Valid EmailVerificationRequest emailVerificationRequest) {
         memberService.verifiedCode(emailVerificationRequest);
