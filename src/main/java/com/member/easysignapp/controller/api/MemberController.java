@@ -2,6 +2,7 @@ package com.member.easysignapp.controller.api;
 
 import com.member.easysignapp.dto.*;
 import com.member.easysignapp.service.MemberService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +39,7 @@ public class MemberController {
         this.messageSourceAccessor = messageSourceAccessor;
     }
 
-    @Operation(summary = "회원 등록", description = "새로운 회원을 등록합니다.")
+    @Operation(summary = "회원 등록", description = "새로운 회원을 등록합니다.", security = {@SecurityRequirement(name = "csrfToken")})
     @PostMapping
     public ApiResponse registerUser(HttpServletRequest servletRequest, @RequestBody @Valid MemberRequest memberRequest) {
         String successMessage = messageSourceAccessor.getMessage("member.registerUser.success.message");
