@@ -52,7 +52,7 @@ public class MemberController {
                 .build();
     }
 
-    @Operation(summary = "회원 로그인", description = "회원 로그인을 처리합니다.")
+    @Operation(summary = "회원 로그인", description = "회원 로그인을 처리합니다.", security = {@SecurityRequirement(name = "csrfToken")})
     @PostMapping("/login")
     public ApiResponse login(HttpServletRequest servletRequest, @RequestBody MemberRequest memberRequest) {
         String successMessage = messageSourceAccessor.getMessage("member.login.success.message");
@@ -65,7 +65,7 @@ public class MemberController {
                 .build();
     }
 
-    @Operation(summary = "인증 상태 확인", description = "현재 로그인된 사용자의 인증 상태를 확인합니다.")
+    @Operation(summary = "인증 상태 확인", description = "현재 로그인된 사용자의 인증 상태를 확인합니다.", security = {@SecurityRequirement(name = "csrfToken")})
     @PostMapping("/check-auth")
     public ApiResponse checkAuth(HttpServletRequest servletRequest, @AuthenticationPrincipal UserDetails userDetails) {
         String successMessage = messageSourceAccessor.getMessage("member.checkAuth.success.message");
@@ -78,7 +78,7 @@ public class MemberController {
                 .build();
     }
 
-    @Operation(summary = "회원 정보 조회", description = "현재 로그인된 사용자의 정보를 반환합니다.")
+    @Operation(summary = "회원 정보 조회", description = "현재 로그인된 사용자의 정보를 반환합니다.", security = {@SecurityRequirement(name = "csrfToken")})
     @GetMapping("/me")
     public ApiResponse getUserInfo(HttpServletRequest servletRequest) {
         // 현재 사용자의 인증 객체 가져오기
@@ -98,7 +98,7 @@ public class MemberController {
                 .build();
     }
 
-    @Operation(summary = "회원 정보 수정", description = "현재 로그인된 사용자의 정보를 수정합니다.")
+    @Operation(summary = "회원 정보 수정", description = "현재 로그인된 사용자의 정보를 수정합니다.", security = {@SecurityRequirement(name = "csrfToken")})
     @PutMapping("/me")
     public ApiResponse setUserInfo(
             HttpServletRequest servletRequest,
@@ -135,7 +135,7 @@ public class MemberController {
                 .build();
     }
 
-    @Operation(summary = "테스트 엔드포인트", description = "테스트용 엔드포인트입니다.")
+    @Operation(summary = "테스트 엔드포인트", description = "테스트용 엔드포인트입니다.", security = {@SecurityRequirement(name = "csrfToken")})
     @PostMapping("/test")
     public ApiResponse test(HttpServletRequest servletRequest) {
         String successMessage = messageSourceAccessor.getMessage("member.test.message");

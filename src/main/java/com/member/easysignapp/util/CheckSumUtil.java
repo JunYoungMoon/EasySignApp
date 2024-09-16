@@ -18,7 +18,7 @@ public class CheckSumUtil {
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Hashing algorithm not found", e);
+            throw new RuntimeException("SHA-256 hashing algorithm is not available in the current environment. Please check the JDK configuration.", e);
         }
     }
 }

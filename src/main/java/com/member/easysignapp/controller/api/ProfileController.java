@@ -1,5 +1,6 @@
 package com.member.easysignapp.controller.api;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -34,7 +35,7 @@ public class ProfileController {
         this.messageSourceAccessor = messageSourceAccessor;
     }
 
-    @Operation(summary = "프로필 이미지 업로드", description = "프로필 이미지를 업로드 합니다.")
+    @Operation(summary = "프로필 이미지 업로드", description = "프로필 이미지를 업로드 합니다.", security = {@SecurityRequirement(name = "csrfToken")})
     @GetMapping("/{fileName:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String fileName) {
         // 외부 디렉터리 경로 설정

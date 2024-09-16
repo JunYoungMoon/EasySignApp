@@ -30,6 +30,7 @@ public class MemberService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final RedisService redisService;
+    private final MailService mailService;
 
     private static final String AUTH_CODE_PREFIX = "AuthCode ";
     private static final String EMAIL_VERIFICATION_PREFIX = "EmailVerification ";
@@ -166,14 +167,15 @@ public class MemberService {
         }
     }
 
-    public void sendCodeToEmail(EmailRequest emailRequest) {
+    public String sendCodeToEmail(EmailRequest emailRequest) {
         checkDuplicatedEmail(emailRequest.getEmail());
         String title = messageSourceAccessor.getMessage("email.title.message", new Object[]{"Easy Sign App"});
         String authCode = this.createCode();
-//        mailService.sendEmail(emailRequest.getEmail(), title, authCode);
+        String msg = mailService.sendEmail(emailRequest, title, authCode);
 
         redisService.setValues(AUTH_CODE_PREFIX + emailRequest.getEmail(),
                 authCode, Duration.ofMillis(this.authCodeExpirationMillis));
+        return msg;
     }
 
     private void checkDuplicatedEmail(String email) {
