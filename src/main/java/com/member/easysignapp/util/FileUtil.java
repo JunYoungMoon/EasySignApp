@@ -63,6 +63,9 @@ public class FileUtil {
         String fileExtension = getFileExtension(originalFileName);
         String newProfileImage = generateUniqueFileName(uuid, sanitizedFileName, fileExtension);
 
+        // newProfileImage 문자열을 Base64로 인코딩
+        newProfileImage = Base64.getEncoder().encodeToString(newProfileImage.getBytes());
+
         Path uploadFolderPath = Paths.get(uploadPath);
         if (!Files.exists(uploadFolderPath)) {
             Files.createDirectories(uploadFolderPath);

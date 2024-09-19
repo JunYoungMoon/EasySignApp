@@ -144,7 +144,7 @@ public class MemberService {
             member.setNickname(newNickname);
         }
         if (newProfileImagePath != null) {
-            member.setProfileImage("/profile/" + newProfileImagePath);
+            member.setProfileImage(newProfileImagePath);
         }
 
         masterMemberRepository.save(member);

@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +30,9 @@ import static com.member.easysignapp.util.FileUtil.saveProfileImage;
 public class MemberController {
     @Value("${upload.profile.directory}")
     private String uploadPath;
+
+    @Value("${server.app.url}")
+    private String serverUrl;
 
     private final MemberService memberService;
     private final MessageSourceAccessor messageSourceAccessor;
@@ -109,8 +113,8 @@ public class MemberController {
         String newProfileImage;
 
         try {
-            newProfileImage = saveProfileImage(profileImage, uuid, uploadPath);
-            memberService.updateMemberInfo(uuid, nickname, newProfileImage);
+            newProfileImage = saveProfileImage(profileImage, uuid, Paths.get("").toAbsolutePath().normalize() + uploadPath);
+            memberService.updateMemberInfo(uuid, nickname, serverUrl + "/profile/" + newProfileImage);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -121,8 +125,9 @@ public class MemberController {
             responseData.put("newNickName", nickname);
         }
 
+        //사용자에게 새로운 이미지 경로를 전달
         if (newProfileImage != null) {
-            responseData.put("newProfileImage", "/profile/" + newProfileImage);
+            responseData.put("newProfileImage", serverUrl + "/profile/" + newProfileImage);
         }
 
         String successMessage = messageSourceAccessor.getMessage("member.setUserInfo.success.message");

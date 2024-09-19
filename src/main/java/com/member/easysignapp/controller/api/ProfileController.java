@@ -35,11 +35,11 @@ public class ProfileController {
         this.messageSourceAccessor = messageSourceAccessor;
     }
 
-    @Operation(summary = "프로필 이미지 업로드", description = "프로필 이미지를 업로드 합니다.", security = {@SecurityRequirement(name = "csrfToken")})
+    @Operation(summary = "프로필 이미지 제공", description = "url로 접근할때 프로필 이미지를 제공합니다.", security = {@SecurityRequirement(name = "csrfToken")})
     @GetMapping("/{fileName:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String fileName) {
         // 외부 디렉터리 경로 설정
-        Path filePath = Paths.get(uploadPath).resolve(fileName).normalize();
+        Path filePath = Paths.get(Paths.get("").toAbsolutePath().normalize() + uploadPath).resolve(fileName).normalize();
 
         // 파일 읽기 및 Resource 객체 생성
         Resource resource;
