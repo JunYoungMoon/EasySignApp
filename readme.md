@@ -45,7 +45,7 @@
     ```
 
 3. **문제 발생 시**:
-    - 설치 중 문제가 발생하면 다음 명령어로 컴포즈 이미지를 모두 삭제하고 다시 시도하세요:
+    - 설치 중 문제가 발생하면 다음 명령어로 컴포즈 이미지를 모두 삭제하고 다시 시도할 수 있습니다:
     ```bash
     docker-compose down --volumes --rmi all
     ```
@@ -63,7 +63,7 @@
 
 다음은 **JWT** 인증 흐름을 시각화한 다이어그램입니다:
 
-![JWT 흐름도](images/readme/JWT.png)
+![JWT 흐름도](images/readme/JWT.png)  
 *(JWT 토큰 발급과 인증 처리 과정)*
 
 ---
@@ -72,7 +72,7 @@
 
 다음은 **CI/CD** 프로세스를 나타낸 흐름도입니다:
 
-![CI/CD 흐름도](images/readme/CICD.png)
+![CI/CD 흐름도](images/readme/CICD.png)  
 *(자동화된 지속적 통합 및 배포 절차)*
 
 ---
